@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS payments (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT UNSIGNED NULL,
+    sponsor_id BIGINT UNSIGNED NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    type ENUM('service_payment', 'monthly_fee', 'refund') NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    fee_amount DECIMAL(10,2) DEFAULT 0,
+    net_amount DECIMAL(10,2) NOT NULL,
+    stripe_charge_id VARCHAR(255),
+    status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE SET NULL,
+    FOREIGN KEY (sponsor_id) REFERENCES sponsors(id) ON DELETE SET NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_payments_user_id (user_id),
+    INDEX idx_payments_sponsor_id (sponsor_id),
+    INDEX idx_payments_status (status),
+    INDEX idx_payments_type (type),
+    INDEX idx_payments_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
