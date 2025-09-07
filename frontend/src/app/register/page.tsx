@@ -6,6 +6,7 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
+import { getAppRole } from '@/lib/config';
 
 interface FormData {
   firstName: string;
@@ -21,6 +22,7 @@ interface FormData {
 }
 
 export default function RegisterPage() {
+  const role = getAppRole();
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -86,7 +88,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header role="user" />
+      <Header role={role} />
       
       <main className="flex-grow flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-2xl">

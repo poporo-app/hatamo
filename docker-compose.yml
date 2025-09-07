@@ -31,7 +31,7 @@ services:
       - "3001:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - ROLE=user
+      - NEXT_PUBLIC_APP_ROLE=user
     depends_on:
       - backend
     volumes:
@@ -49,7 +49,7 @@ services:
       - "3002:3002"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - ROLE=sponsor
+      - NEXT_PUBLIC_APP_ROLE=sponsor
     depends_on:
       - backend
     volumes:
@@ -67,7 +67,7 @@ services:
       - "3003:3003"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - ROLE=admin
+      - NEXT_PUBLIC_APP_ROLE=admin
     depends_on:
       - backend
     volumes:

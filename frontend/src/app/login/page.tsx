@@ -6,8 +6,10 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
+import { getAppRole } from '@/lib/config';
 
 export default function LoginPage() {
+  const role = getAppRole();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -28,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header role="user" />
+      <Header role={role} />
       
       <main className="flex-grow flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">

@@ -3,6 +3,7 @@ import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
+import { getAppRole } from '@/lib/config';
 
 // Mock service data
 const mockServices = [
@@ -86,9 +87,11 @@ const categories = [
 ];
 
 export default function ServicesPage() {
+  const role = getAppRole();
+  
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header role="user" />
+      <Header role={role} />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="mb-8">

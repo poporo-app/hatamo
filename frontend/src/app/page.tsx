@@ -3,23 +3,30 @@ import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
+import { getAppRole } from '@/lib/config';
 
 export default function HomePage() {
+  const role = getAppRole();
+  
   return (
     <>
-      <Header role="user" />
+      <Header role={role} />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <section className="mb-12">
-          <div className="bg-gradient-to-r from-blue-800 to-blue-900 text-white rounded-lg p-12 text-center">
+          <div className={`bg-gradient-to-r ${
+            role === 'sponsor' ? 'from-green-800 to-green-900' :
+            role === 'admin' ? 'from-purple-800 to-purple-900' :
+            'from-blue-800 to-blue-900'
+          } text-white rounded-lg p-12 text-center`}>
             <h1 className="text-4xl font-bold mb-4">異次元コミュニティ HATAMO</h1>
             <p className="text-xl mb-8">信頼できるプロフェッショナルとのマッチングサービス</p>
             <div className="flex gap-4 justify-center">
               <Link href="/services">
-                <Button size="lg" theme="user">サービスを探す</Button>
+                <Button size="lg" theme={role}>サービスを探す</Button>
               </Link>
               <Link href="/register">
-                <Button variant="secondary" size="lg" theme="user">新規登録</Button>
+                <Button variant="secondary" size="lg" theme={role}>新規登録</Button>
               </Link>
             </div>
           </div>
@@ -37,7 +44,7 @@ export default function HomePage() {
                   <p className="text-2xl font-bold text-blue-600">¥10,000〜</p>
                 </div>
                 <Link href={`/service/${i}`}>
-                  <Button fullWidth theme="user">詳細を見る</Button>
+                  <Button fullWidth theme={role}>詳細を見る</Button>
                 </Link>
               </Card>
             ))}

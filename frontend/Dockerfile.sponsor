@@ -11,6 +11,7 @@ COPY . .
 COPY next.config.sponsor.ts next.config.ts
 
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_PUBLIC_APP_ROLE sponsor
 
 RUN npm run build
 

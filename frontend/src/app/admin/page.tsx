@@ -3,8 +3,10 @@ import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
 import Link from 'next/link';
+import { getAppRole } from '@/lib/config';
 
 export default function AdminDashboard() {
+  const role = getAppRole();
   const stats = [
     { label: '総スポンサー数', value: '156', change: '+5 今月' },
     { label: '審査待ち', value: '8', change: '要対応' },
@@ -26,7 +28,7 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <Header role="admin" />
+      <Header role={role} />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="mb-8">

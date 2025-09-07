@@ -2,8 +2,10 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Link from 'next/link';
+import { getAppRole } from '@/lib/config';
 
 export default function SponsorDashboard() {
+  const role = getAppRole();
   const stats = [
     { label: '今月の申込数', value: '24', change: '+12%' },
     { label: '今月の売上', value: '¥480,000', change: '+8%' },
@@ -19,7 +21,7 @@ export default function SponsorDashboard() {
 
   return (
     <>
-      <Header role="sponsor" />
+      <Header role={role} />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="mb-8">

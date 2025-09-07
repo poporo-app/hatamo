@@ -5,6 +5,7 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Button from '@/components/common/Button';
+import { getAppRole } from '@/lib/config';
 
 interface ServiceDetailPageProps {
   params: Promise<{
@@ -98,6 +99,7 @@ const getServiceData = (id: string) => {
 };
 
 export default function ServiceDetailPage({ params }: ServiceDetailPageProps) {
+  const role = getAppRole();
   const resolvedParams = use(params);
   const [selectedPackage, setSelectedPackage] = useState(0);
   const [showContactForm, setShowContactForm] = useState(false);
@@ -106,7 +108,7 @@ export default function ServiceDetailPage({ params }: ServiceDetailPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header role="user" />
+      <Header role={role} />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
