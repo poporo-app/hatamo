@@ -88,6 +88,10 @@ services:
       - mysql-data:/var/lib/mysql
     networks:
       - hatamo-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   redis:
     image: redis:latest
