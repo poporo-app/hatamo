@@ -2,77 +2,120 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+
+	"github.com/j-nasu/hatamo/backend/internal/config"
+	"github.com/j-nasu/hatamo/backend/internal/handlers"
+	"github.com/j-nasu/hatamo/backend/internal/models"
+	"github.com/j-nasu/hatamo/backend/internal/services"
 )
 
-var (
-	db  *sql.DB
-	rdb *redis.Client
-	ctx = context.Background()
-)
+type Application struct {
+	config       *config.Config
+	db           *gorm.DB
+	redis        *redis.Client
+	emailService *services.EmailService
+	authHandler  *handlers.AuthHandler
+}
 
-func initDB() {
+func NewApplication() *Application {
+	// Load configuration
+	cfg := config.Load()
+
+	app := &Application{
+		config: cfg,
+	}
+
+	// Initialize services
+	app.initDB()
+	app.initRedis()
+	app.initServices()
+	app.initHandlers()
+
+	return app
+}
+
+func (app *Application) initDB() {
 	var err error
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		getEnv("DB_USER", "root"),
-		getEnv("DB_PASSWORD", "rootpassword"),
-		getEnv("DB_HOST", "localhost"),
-		getEnv("DB_PORT", "3306"),
-		getEnv("DB_NAME", "hatamo"),
-	)
 
+	// Configure GORM logger
+	gormLogger := logger.Default.LogMode(logger.Info)
+
+	// Connect to database with retry logic
 	for i := 0; i < 30; i++ {
-		db, err = sql.Open("mysql", dsn)
+		app.db, err = gorm.Open(mysql.Open(app.config.GetDSN()), &gorm.Config{
+			Logger: gormLogger,
+		})
+		
 		if err == nil {
-			if err = db.Ping(); err == nil {
-				log.Println("Successfully connected to MySQL")
-				return
+			// Get underlying SQL DB to configure connection pool
+			sqlDB, err := app.db.DB()
+			if err == nil {
+				if err = sqlDB.Ping(); err == nil {
+					// Configure connection pool
+					sqlDB.SetMaxIdleConns(10)
+					sqlDB.SetMaxOpenConns(100)
+					sqlDB.SetConnMaxLifetime(time.Hour)
+					
+					log.Println("Successfully connected to MySQL with GORM")
+					return
+				}
 			}
 		}
-		log.Printf("Failed to connect to MySQL. Retrying in 2 seconds... (%d/30)\n", i+1)
+		
+		log.Printf("Failed to connect to MySQL. Retrying in 2 seconds... (%d/30)", i+1)
 		time.Sleep(2 * time.Second)
 	}
+	
 	log.Fatal("Failed to connect to MySQL after 30 attempts")
 }
 
-func initRedis() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", getEnv("REDIS_HOST", "localhost"), getEnv("REDIS_PORT", "6379")),
+func (app *Application) initRedis() {
+	app.redis = redis.NewClient(&redis.Options{
+		Addr:     app.config.GetRedisAddr(),
 		Password: "",
 		DB:       0,
 	})
 
+	ctx := context.Background()
 	for i := 0; i < 30; i++ {
-		_, err := rdb.Ping(ctx).Result()
+		_, err := app.redis.Ping(ctx).Result()
 		if err == nil {
 			log.Println("Successfully connected to Redis")
 			return
 		}
-		log.Printf("Failed to connect to Redis. Retrying in 2 seconds... (%d/30)\n", i+1)
+		log.Printf("Failed to connect to Redis. Retrying in 2 seconds... (%d/30)", i+1)
 		time.Sleep(2 * time.Second)
 	}
 	log.Fatal("Failed to connect to Redis after 30 attempts")
 }
 
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
+func (app *Application) initServices() {
+	app.emailService = services.NewEmailService(app.config)
 }
 
-func setupRouter() *gin.Engine {
+func (app *Application) initHandlers() {
+	app.authHandler = handlers.NewAuthHandler(app.db, app.emailService, app.config)
+}
+
+func (app *Application) setupRouter() *gin.Engine {
+	// Set Gin mode based on environment
+	if app.config.App.Name == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	r := gin.Default()
 
+	// Add CORS middleware
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -87,26 +130,36 @@ func setupRouter() *gin.Engine {
 		c.Next()
 	})
 
+	// Root endpoint
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Hello World from Go Backend!",
+			"message": "HATAMO API Server",
 			"status":  "ok",
+			"version": "1.0.0",
 		})
 	})
 
+	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {
-		dbErr := db.Ping()
-		_, redisErr := rdb.Ping(ctx).Result()
+		// Check database connection
+		sqlDB, err := app.db.DB()
+		dbHealthy := err == nil && sqlDB.Ping() == nil
+
+		// Check Redis connection
+		_, redisErr := app.redis.Ping(context.Background()).Result()
+		redisHealthy := redisErr == nil
 
 		health := gin.H{
 			"status": "healthy",
+			"timestamp": time.Now().Format(time.RFC3339),
 			"services": gin.H{
-				"database": dbErr == nil,
-				"redis":    redisErr == nil,
+				"database": dbHealthy,
+				"redis":    redisHealthy,
 			},
 		}
 
-		if dbErr != nil || redisErr != nil {
+		if !dbHealthy || !redisHealthy {
+			health["status"] = "unhealthy"
 			c.JSON(http.StatusServiceUnavailable, health)
 			return
 		}
@@ -114,16 +167,40 @@ func setupRouter() *gin.Engine {
 		c.JSON(http.StatusOK, health)
 	})
 
+	// API routes
+	api := r.Group("/api/v1")
+	{
+		// Register authentication routes
+		app.authHandler.RegisterRoutes(api)
+	}
+
 	return r
 }
 
-func main() {
-	initDB()
-	initRedis()
+func (app *Application) autoMigrate() {
+	log.Println("Running database auto-migration...")
+	
+	if err := app.db.AutoMigrate(&models.User{}); err != nil {
+		log.Fatalf("Failed to auto-migrate database: %v", err)
+	}
+	
+	log.Println("Database auto-migration completed successfully")
+}
 
-	router := setupRouter()
-	log.Println("Server starting on port 8080...")
-	if err := router.Run(":8080"); err != nil {
+func main() {
+	log.Println("Starting HATAMO API Server...")
+
+	app := NewApplication()
+	
+	// Run auto-migration (in production, you might want to disable this)
+	app.autoMigrate()
+
+	router := app.setupRouter()
+	
+	serverAddr := fmt.Sprintf(":%s", app.config.Server.Port)
+	log.Printf("Server starting on port %s...", app.config.Server.Port)
+	
+	if err := router.Run(serverAddr); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }
