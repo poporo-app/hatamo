@@ -25,6 +25,7 @@ type Application struct {
 	redis        *redis.Client
 	emailService *services.EmailService
 	authHandler  *handlers.AuthHandler
+	adminHandler *handlers.AdminHandler
 }
 
 func NewApplication() *Application {
@@ -105,6 +106,7 @@ func (app *Application) initServices() {
 
 func (app *Application) initHandlers() {
 	app.authHandler = handlers.NewAuthHandler(app.db, app.emailService, app.config)
+	app.adminHandler = handlers.NewAdminHandler(app.db)
 }
 
 func (app *Application) setupRouter() *gin.Engine {
@@ -172,6 +174,8 @@ func (app *Application) setupRouter() *gin.Engine {
 	{
 		// Register authentication routes
 		app.authHandler.RegisterRoutes(api)
+		// Register admin routes
+		app.adminHandler.RegisterRoutes(api)
 	}
 
 	return r

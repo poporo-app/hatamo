@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net/url"
 
 	"github.com/j-nasu/hatamo/backend/internal/config"
 	"gopkg.in/gomail.v2"
@@ -31,6 +32,12 @@ func NewEmailService(cfg *config.Config) *EmailService {
 		cfg.Email.SMTPUsername,
 		cfg.Email.SMTPPassword,
 	)
+	
+	// If no username/password provided (e.g., MailHog), skip authentication
+	if cfg.Email.SMTPUsername == "" && cfg.Email.SMTPPassword == "" {
+		dialer = gomail.NewDialer(cfg.Email.SMTPHost, cfg.Email.SMTPPort, "", "")
+		dialer.Auth = nil
+	}
 
 	return &EmailService{
 		config:    &cfg.Email,
@@ -40,7 +47,12 @@ func NewEmailService(cfg *config.Config) *EmailService {
 }
 
 func (es *EmailService) SendVerificationEmail(recipientEmail, recipientName, verificationToken string) error {
-	verificationURL := fmt.Sprintf("%s/auth/verify-email?token=%s", es.appConfig.BaseURL, verificationToken)
+	log.Printf("Attempting to send verification email to %s via SMTP server %s:%d", 
+		recipientEmail, es.config.SMTPHost, es.config.SMTPPort)
+	
+	// URL-encode the token for safe inclusion in URL
+	encodedToken := url.QueryEscape(verificationToken)
+	verificationURL := fmt.Sprintf("%s/verify-email?token=%s", es.appConfig.BaseURL, encodedToken)
 	
 	emailData := EmailData{
 		RecipientName:   recipientName,
@@ -54,6 +66,7 @@ func (es *EmailService) SendVerificationEmail(recipientEmail, recipientName, ver
 	
 	htmlBody, err := es.renderVerificationTemplate(emailData)
 	if err != nil {
+		log.Printf("Error rendering email template: %v", err)
 		return fmt.Errorf("failed to render email template: %w", err)
 	}
 
@@ -66,12 +79,17 @@ func (es *EmailService) SendVerificationEmail(recipientEmail, recipientName, ver
 	m.SetBody("text/plain", plainBody)
 	m.AddAlternative("text/html", htmlBody)
 
+	log.Printf("Email message prepared. Sending to SMTP server...")
+	
 	if err := es.dialer.DialAndSend(m); err != nil {
 		log.Printf("Failed to send verification email to %s: %v", recipientEmail, err)
+		log.Printf("SMTP Config - Host: %s, Port: %d, Auth: %v", 
+			es.config.SMTPHost, es.config.SMTPPort, es.dialer.Auth != nil)
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
 	log.Printf("Verification email sent successfully to %s", recipientEmail)
+	log.Printf("You can view the email at http://localhost:8025 (MailHog Web UI)")
 	return nil
 }
 

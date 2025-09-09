@@ -80,9 +80,8 @@ export const authApi = {
    * Verify email with token
    */
   verifyEmail: async (data: VerifyEmailRequest): Promise<VerifyEmailResponse> => {
-    return apiRequest<VerifyEmailResponse>('/api/v1/auth/verify-email', {
-      method: 'POST',
-      body: JSON.stringify(data),
+    return apiRequest<VerifyEmailResponse>(`/api/v1/auth/verify-email?token=${data.token}`, {
+      method: 'GET',
     });
   },
 
