@@ -28,7 +28,7 @@ func ValidateEmail(email string) *ValidationError {
 	if email == "" {
 		return &ValidationError{
 			Field:   "email",
-			Message: "Email is required",
+			Message: "メールアドレスは必須です",
 			Code:    "required",
 		}
 	}
@@ -36,7 +36,7 @@ func ValidateEmail(email string) *ValidationError {
 	if len(email) > 255 {
 		return &ValidationError{
 			Field:   "email",
-			Message: "Email must be less than 255 characters",
+			Message: "メールアドレスは255文字以内で入力してください",
 			Code:    "max_length",
 		}
 	}
@@ -44,7 +44,7 @@ func ValidateEmail(email string) *ValidationError {
 	if !EmailValidator.MatchString(email) {
 		return &ValidationError{
 			Field:   "email",
-			Message: "Please provide a valid email address",
+			Message: "有効なメールアドレスを入力してください",
 			Code:    "invalid_format",
 		}
 	}
@@ -59,7 +59,7 @@ func ValidatePassword(password string) []ValidationError {
 	if password == "" {
 		errors = append(errors, ValidationError{
 			Field:   "password",
-			Message: "Password is required",
+			Message: "パスワードは必須です",
 			Code:    "required",
 		})
 		return errors
@@ -68,7 +68,7 @@ func ValidatePassword(password string) []ValidationError {
 	if len(password) < 8 {
 		errors = append(errors, ValidationError{
 			Field:   "password",
-			Message: "Password must be at least 8 characters long",
+			Message: "パスワードは8文字以上で入力してください",
 			Code:    "min_length",
 		})
 	}
@@ -76,7 +76,7 @@ func ValidatePassword(password string) []ValidationError {
 	if len(password) > 128 {
 		errors = append(errors, ValidationError{
 			Field:   "password",
-			Message: "Password must be less than 128 characters",
+			Message: "パスワードは128文字以内で入力してください",
 			Code:    "max_length",
 		})
 	}
@@ -104,7 +104,7 @@ func ValidatePassword(password string) []ValidationError {
 	if !hasNumber {
 		errors = append(errors, ValidationError{
 			Field:   "password",
-			Message: "Password must contain at least one number",
+			Message: "パスワードには少なくとも1つの数字を含めてください",
 			Code:    "missing_number",
 		})
 	}
@@ -112,7 +112,7 @@ func ValidatePassword(password string) []ValidationError {
 	if !hasLetter {
 		errors = append(errors, ValidationError{
 			Field:   "password",
-			Message: "Password must contain at least one letter",
+			Message: "パスワードには少なくとも1つの文字を含めてください",
 			Code:    "missing_letter",
 		})
 	}
@@ -138,7 +138,7 @@ func ValidateName(name, fieldName string) *ValidationError {
 	if name == "" {
 		return &ValidationError{
 			Field:   fieldName,
-			Message: fieldName + " is required",
+			Message: "名前は必須です",
 			Code:    "required",
 		}
 	}
@@ -147,7 +147,7 @@ func ValidateName(name, fieldName string) *ValidationError {
 	if len(name) < 1 {
 		return &ValidationError{
 			Field:   fieldName,
-			Message: fieldName + " cannot be empty",
+			Message: "名前を入力してください",
 			Code:    "empty",
 		}
 	}
@@ -155,7 +155,7 @@ func ValidateName(name, fieldName string) *ValidationError {
 	if len(name) > 100 {
 		return &ValidationError{
 			Field:   fieldName,
-			Message: fieldName + " must be less than 100 characters",
+			Message: "名前は100文字以内で入力してください",
 			Code:    "max_length",
 		}
 	}
@@ -166,7 +166,7 @@ func ValidateName(name, fieldName string) *ValidationError {
 	if !validName.MatchString(name) {
 		return &ValidationError{
 			Field:   fieldName,
-			Message: fieldName + " contains invalid characters",
+			Message: "名前に使用できない文字が含まれています",
 			Code:    "invalid_characters",
 		}
 	}
@@ -189,7 +189,7 @@ func ValidateKana(kana string, fieldName string) *ValidationError {
 	if len(kana) > 100 {
 		return &ValidationError{
 			Field:   fieldName,
-			Message: fieldName + " must be at most 100 characters",
+			Message: "ふりがなは100文字以内で入力してください",
 			Code:    "max_length",
 		}
 	}
@@ -199,7 +199,7 @@ func ValidateKana(kana string, fieldName string) *ValidationError {
 	if !validKana.MatchString(kana) {
 		return &ValidationError{
 			Field:   fieldName,
-			Message: fieldName + " must contain only hiragana or katakana characters",
+			Message: "ふりがなはひらがなまたはカタカナで入力してください",
 			Code:    "invalid_characters",
 		}
 	}
@@ -217,7 +217,7 @@ func ValidatePhone(phone string) *ValidationError {
 	if len(phone) < 10 {
 		return &ValidationError{
 			Field:   "phone",
-			Message: "Phone number must be at least 10 characters",
+			Message: "電話番号は10文字以上で入力してください",
 			Code:    "min_length",
 		}
 	}
@@ -225,7 +225,7 @@ func ValidatePhone(phone string) *ValidationError {
 	if len(phone) > 20 {
 		return &ValidationError{
 			Field:   "phone",
-			Message: "Phone number must be less than 20 characters",
+			Message: "電話番号は20文字以内で入力してください",
 			Code:    "max_length",
 		}
 	}
@@ -235,7 +235,7 @@ func ValidatePhone(phone string) *ValidationError {
 	if !validPhone.MatchString(phone) {
 		return &ValidationError{
 			Field:   "phone",
-			Message: "Phone number contains invalid characters",
+			Message: "電話番号に使用できない文字が含まれています",
 			Code:    "invalid_format",
 		}
 	}
