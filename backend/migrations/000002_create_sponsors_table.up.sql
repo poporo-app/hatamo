@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS sponsors (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    company_type VARCHAR(50),
+    business_number VARCHAR(50),
+    representative_name VARCHAR(255),
+    address TEXT,
+    description TEXT,
+    website_url VARCHAR(255),
+    approval_status ENUM('pending', 'approved', 'rejected', 'suspended') DEFAULT 'pending',
+    approved_at TIMESTAMP NULL,
+    monthly_fee DECIMAL(10,2) DEFAULT 0,
+    stripe_customer_id VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_sponsors_user_id (user_id),
+    INDEX idx_sponsors_approval_status (approval_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

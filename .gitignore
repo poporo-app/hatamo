@@ -30,3 +30,5 @@ yarn-error.log*
 # AWS
 .aws/
 *.pem
+
+task_*
