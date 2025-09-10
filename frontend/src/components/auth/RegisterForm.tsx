@@ -189,7 +189,6 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     setErrors({});
 
     try {
-      console.log('Submitting registration with data:', formData);
       const response = await authApi.register({
         email: formData.email,
         password: formData.password,
@@ -199,10 +198,8 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
         firstNameKana: formData.firstNameKana,
         lastNameKana: formData.lastNameKana
       });
-      console.log('Registration successful:', response);
       onSuccess(response.message || '登録が完了しました。確認メールをお送りしましたので、メールをご確認ください。');
     } catch (error: any) {
-      console.error('Registration error:', error);
       
       // Handle server-side validation errors
       if (error.data && error.data.errors && Array.isArray(error.data.errors)) {

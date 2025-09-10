@@ -24,12 +24,6 @@ async function apiRequest<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  console.log('API Request:', {
-    url,
-    method: options.method || 'GET',
-    body: options.body
-  });
-  
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -42,12 +36,6 @@ async function apiRequest<T>(
     const response = await fetch(url, config);
     const data = await response.json();
     
-    console.log('API Response:', {
-      status: response.status,
-      ok: response.ok,
-      data
-    });
-
     if (!response.ok) {
       throw new ApiError(
         response.status,
