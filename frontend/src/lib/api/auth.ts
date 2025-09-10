@@ -51,7 +51,7 @@ async function apiRequest<T>(
     if (!response.ok) {
       throw new ApiError(
         response.status,
-        data.message || 'An error occurred',
+        data.error || data.message || 'An error occurred',
         data
       );
     }

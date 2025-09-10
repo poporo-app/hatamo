@@ -224,7 +224,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
           }
         });
         setErrors(serverErrors);
-        onError('入力内容にエラーがあります。各項目をご確認ください。');
+        // Don't show general error message when there are field-specific errors
       } else {
         onError(error.message || '登録に失敗しました。もう一度お試しください。');
       }
