@@ -9,6 +9,8 @@ require (
 	github.com/redis/go-redis/v9 v9.5.1
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.5
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
+	github.com/google/uuid v1.3.0
 )
 
 require (
