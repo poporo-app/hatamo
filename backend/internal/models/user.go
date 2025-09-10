@@ -37,6 +37,8 @@ type User struct {
 	PasswordHash           string     `json:"-" gorm:"not null;size:255"`
 	FirstName              string     `json:"first_name" gorm:"not null;size:100"`
 	LastName               string     `json:"last_name" gorm:"not null;size:100"`
+	FirstNameKana          string     `json:"first_name_kana" gorm:"size:100"`
+	LastNameKana           string     `json:"last_name_kana" gorm:"size:100"`
 	Phone                  *string    `json:"phone" gorm:"size:20"`
 	Role                   UserRole   `json:"role" gorm:"type:enum('user','sponsor','admin');default:'user'"`
 	EmailVerifiedAt        *time.Time `json:"email_verified_at" gorm:"index"`
@@ -47,11 +49,13 @@ type User struct {
 }
 
 type CreateUserRequest struct {
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=8"`
-	FirstName string `json:"first_name" binding:"required,min=1,max=100"`
-	LastName  string `json:"last_name" binding:"required,min=1,max=100"`
-	Phone     string `json:"phone" binding:"omitempty,min=10,max=20"`
+	Email         string `json:"email" binding:"required,email"`
+	Password      string `json:"password" binding:"required,min=8"`
+	FirstName     string `json:"first_name" binding:"required,min=1,max=100"`
+	LastName      string `json:"last_name" binding:"required,min=1,max=100"`
+	FirstNameKana string `json:"first_name_kana" binding:"omitempty,max=100"`
+	LastNameKana  string `json:"last_name_kana" binding:"omitempty,max=100"`
+	Phone         string `json:"phone" binding:"omitempty,min=10,max=20"`
 }
 
 type UserResponse struct {
@@ -59,6 +63,8 @@ type UserResponse struct {
 	Email           string     `json:"email"`
 	FirstName       string     `json:"first_name"`
 	LastName        string     `json:"last_name"`
+	FirstNameKana   string     `json:"first_name_kana"`
+	LastNameKana    string     `json:"last_name_kana"`
 	Phone           *string    `json:"phone"`
 	Role            UserRole   `json:"role"`
 	EmailVerifiedAt *time.Time `json:"email_verified_at"`
@@ -72,6 +78,8 @@ func (u *User) ToResponse() *UserResponse {
 		Email:           u.Email,
 		FirstName:       u.FirstName,
 		LastName:        u.LastName,
+		FirstNameKana:   u.FirstNameKana,
+		LastNameKana:    u.LastNameKana,
 		Phone:           u.Phone,
 		Role:            u.Role,
 		EmailVerifiedAt: u.EmailVerifiedAt,

@@ -110,6 +110,8 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 		PasswordHash:           string(hashedPassword),
 		FirstName:              strings.TrimSpace(req.FirstName),
 		LastName:               strings.TrimSpace(req.LastName),
+		FirstNameKana:          strings.TrimSpace(req.FirstNameKana),
+		LastNameKana:           strings.TrimSpace(req.LastNameKana),
 		Phone:                  phone,
 		Role:                   models.UserRoleUser,
 		EmailVerificationToken: &tokenInfo.Token,

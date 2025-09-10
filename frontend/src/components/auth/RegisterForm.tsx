@@ -16,6 +16,8 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     confirmPassword: '',
     firstName: '',
     lastName: '',
+    firstNameKana: '',
+    lastNameKana: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -102,6 +104,22 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
           delete newErrors.lastName;
         }
         break;
+
+      case 'firstNameKana':
+        if (formData.firstNameKana && !/^[\u3040-\u309F\u30A0-\u30FF\s・]+$/.test(formData.firstNameKana)) {
+          newErrors.firstNameKana = 'ひらがなまたはカタカナで入力してください';
+        } else {
+          delete newErrors.firstNameKana;
+        }
+        break;
+
+      case 'lastNameKana':
+        if (formData.lastNameKana && !/^[\u3040-\u309F\u30A0-\u30FF\s・]+$/.test(formData.lastNameKana)) {
+          newErrors.lastNameKana = 'ひらがなまたはカタカナで入力してください';
+        } else {
+          delete newErrors.lastNameKana;
+        }
+        break;
     }
 
     setErrors(newErrors);
@@ -143,6 +161,16 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
       newErrors.lastName = '苗字は必須です';
     } else if (!validateName(formData.lastName)) {
       newErrors.lastName = '有効な苗字を入力してください';
+    }
+    
+    // Validate firstNameKana (optional)
+    if (formData.firstNameKana && !/^[\u3040-\u309F\u30A0-\u30FF\s・]+$/.test(formData.firstNameKana)) {
+      newErrors.firstNameKana = 'ひらがなまたはカタカナで入力してください';
+    }
+    
+    // Validate lastNameKana (optional)
+    if (formData.lastNameKana && !/^[\u3040-\u309F\u30A0-\u30FF\s・]+$/.test(formData.lastNameKana)) {
+      newErrors.lastNameKana = 'ひらがなまたはカタカナで入力してください';
     }
     
     setErrors(newErrors);
@@ -290,6 +318,58 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
             <p className="text-sm text-red-400 flex items-center">
               <span className="mr-1">⚠️</span>
               {errors.lastName}
+            </p>
+          )}
+        </div>
+
+        {/* First Name Kana */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">
+            名前（ふりがな）
+          </label>
+          <input
+            type="text"
+            value={formData.firstNameKana || ''}
+            onChange={(e) => handleFieldChange('firstNameKana', e.target.value)}
+            onBlur={() => handleFieldBlur('firstNameKana')}
+            className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
+              errors.firstNameKana 
+                ? 'border-red-400 focus:ring-red-400' 
+                : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+            }`}
+            placeholder="たろう"
+            disabled={isLoading}
+          />
+          {errors.firstNameKana && (
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.firstNameKana}
+            </p>
+          )}
+        </div>
+
+        {/* Last Name Kana */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">
+            苗字（ふりがな）
+          </label>
+          <input
+            type="text"
+            value={formData.lastNameKana || ''}
+            onChange={(e) => handleFieldChange('lastNameKana', e.target.value)}
+            onBlur={() => handleFieldBlur('lastNameKana')}
+            className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
+              errors.lastNameKana 
+                ? 'border-red-400 focus:ring-red-400' 
+                : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+            }`}
+            placeholder="たなか"
+            disabled={isLoading}
+          />
+          {errors.lastNameKana && (
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.lastNameKana}
             </p>
           )}
         </div>
