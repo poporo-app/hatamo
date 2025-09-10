@@ -31,4 +31,4 @@ yarn-error.log*
 .aws/
 *.pem
 
-task_*
+task_app.md
