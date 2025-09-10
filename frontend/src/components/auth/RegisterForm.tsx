@@ -181,7 +181,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     e.preventDefault();
     
     if (!validateAllFields()) {
-      onError('入力内容をご確認ください');
+      // Don't show general error message, field-specific errors are shown
       return;
     }
 
