@@ -63,10 +63,15 @@ func (h *AuthHandler) RegisterUser(c *gin.Context) {
 	// Check if user already exists
 	var existingUser models.User
 	if err := h.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
-		c.JSON(http.StatusConflict, gin.H{
-			"error":   "User already exists",
-			"message": "An account with this email address already exists",
-		})
+		// Return as validation error so it appears under the email field
+		validationErrors := []middleware.ValidationError{
+			{
+				Field:   "email",
+				Message: "このメールアドレスは既に登録されています",
+				Code:    "already_exists",
+			},
+		}
+		c.JSON(http.StatusBadRequest, middleware.CreateValidationErrorResponse(validationErrors))
 		return
 	} else if err != gorm.ErrRecordNotFound {
 		log.Printf("Database error checking existing user: %v", err)
