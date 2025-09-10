@@ -78,6 +78,8 @@ export const authApi = {
       password: data.password,
       first_name: data.firstName,
       last_name: data.lastName,
+      first_name_kana: data.firstNameKana || '',
+      last_name_kana: data.lastNameKana || '',
       phone: '' // Phone field is optional in backend
     };
     

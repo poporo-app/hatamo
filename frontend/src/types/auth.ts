@@ -4,6 +4,8 @@ export interface RegisterRequest {
   confirmPassword: string;
   firstName: string;
   lastName: string;
+  firstNameKana?: string;
+  lastNameKana?: string;
 }
 
 export interface RegisterResponse {
@@ -64,6 +66,8 @@ export interface FormErrors {
   confirmPassword?: string;
   firstName?: string;
   lastName?: string;
+  firstNameKana?: string;
+  lastNameKana?: string;
   general?: string;
 }
 

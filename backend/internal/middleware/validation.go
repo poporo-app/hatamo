@@ -174,6 +174,39 @@ func ValidateName(name, fieldName string) *ValidationError {
 	return nil
 }
 
+// ValidateKana checks if the kana field contains only valid characters (optional field)
+func ValidateKana(kana string, fieldName string) *ValidationError {
+	if kana == "" {
+		return nil // Kana is optional
+	}
+
+	kana = strings.TrimSpace(kana)
+	if kana == "" {
+		return nil
+	}
+
+	// Check length
+	if len(kana) > 100 {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: fieldName + " must be at most 100 characters",
+			Code:    "max_length",
+		}
+	}
+
+	// Check for invalid characters (allow only Hiragana, Katakana, spaces, and middle dot)
+	validKana := regexp.MustCompile(`^[\p{Hiragana}\p{Katakana}\s・]+$`)
+	if !validKana.MatchString(kana) {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: fieldName + " must contain only hiragana or katakana characters",
+			Code:    "invalid_characters",
+		}
+	}
+
+	return nil
+}
+
 // ValidatePhone checks if phone number is valid (optional field)
 func ValidatePhone(phone string) *ValidationError {
 	if phone == "" {
