@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        input { display: block; margin: 10px 0; padding: 8px; width: 300px; background: #333; color: white; border: 1px solid #555; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; margin: 5px; }
+        button:hover { background: #45a049; }
+        #result { margin-top: 20px; padding: 10px; background: #333; border-radius: 5px; }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+    </style>
+</head>
+<body>
+    <h1>フロントエンド登録テスト</h1>
+    
+    <div>
+        <h2>新規登録フォーム</h2>
+        <input type="email" id="email" placeholder="メールアドレス" />
+        <input type="password" id="password" placeholder="パスワード" />
+        <input type="text" id="firstName" placeholder="名前" />
+        <input type="text" id="lastName" placeholder="苗字" />
+        <input type="text" id="phone" placeholder="電話番号（任意）" />
+        
+        <button onclick="testRegistration()">登録テスト</button>
+        <button onclick="checkDatabase()">データベース確認</button>
+        <button onclick="clearForm()">クリア</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testRegistration() {
+            const email = document.getElementById('email').value || `test${Date.now()}@example.com`;
+            const password = document.getElementById('password').value || 'Test1234!';
+            const firstName = document.getElementById('firstName').value || 'Test';
+            const lastName = document.getElementById('lastName').value || 'User';
+            const phone = document.getElementById('phone').value || '';
+            
+            const data = {
+                email: email,
+                password: password,
+                first_name: firstName,
+                last_name: lastName,
+                phone: phone
+            };
+            
+            console.log('送信データ:', data);
+            showResult('送信中...', '');
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('レスポンス:', result);
+                
+                if (response.ok) {
+                    showResult(`✅ 登録成功！\nEmail: ${data.email}\nUser ID: ${result.user.id}`, 'success');
+                } else {
+                    showResult(`❌ エラー: ${result.message || result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('エラー:', error);
+                showResult(`❌ 通信エラー: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkDatabase() {
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/admin/database/tables/users');
+                const data = await response.json();
+                const lastUsers = data.rows.slice(-5).reverse();
+                
+                let html = '<h3>データベース内の最新ユーザー（5件）</h3>';
+                html += `<p>総ユーザー数: ${data.rows.length}</p>`;
+                html += '<ul>';
+                lastUsers.forEach(user => {
+                    html += `<li>ID: ${user.id} - ${user.email} (${user.created_at})</li>`;
+                });
+                html += '</ul>';
+                
+                showResult(html, 'success');
+            } catch (error) {
+                showResult(`❌ データベース確認エラー: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearForm() {
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('firstName').value = '';
+            document.getElementById('lastName').value = '';
+            document.getElementById('phone').value = '';
+            showResult('フォームをクリアしました', '');
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = type;
+        }
+        
+        // ページ読み込み時にデータベースを確認
+        window.onload = () => {
+            checkDatabase();
+        };
+    </script>
+</body>
+</html>

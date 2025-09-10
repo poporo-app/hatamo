@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Test</title>
+</head>
+<body>
+    <h1>Registration Test</h1>
+    <button onclick="testRegistration()">Test Registration</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testRegistration() {
+            const timestamp = Date.now();
+            const data = {
+                email: `webtest${timestamp}@example.com`,
+                password: "Test1234!",
+                first_name: "Web",
+                last_name: "Test",
+                phone: "9999999999"
+            };
+            
+            console.log('Sending registration:', data);
+            document.getElementById('result').innerHTML = 'Sending...';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('Response:', result);
+                document.getElementById('result').innerHTML = 
+                    `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    
+                if (response.ok) {
+                    alert('Registration successful! Check database.');
+                } else {
+                    alert('Registration failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 
+                    `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
