@@ -108,11 +108,45 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
   };
 
   const validateAllFields = (): boolean => {
-    const fields = ['email', 'password', 'confirmPassword', 'firstName', 'lastName'];
-    fields.forEach(validateField);
+    const newErrors: { [key: string]: string } = {};
     
-    // Check if any errors exist after validation
-    return Object.keys(errors).length === 0 && passwordStrength.isValid;
+    // Validate email
+    if (!formData.email) {
+      newErrors.email = 'メールアドレスは必須です';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = '有効なメールアドレスを入力してください';
+    }
+    
+    // Validate password
+    if (!formData.password) {
+      newErrors.password = 'パスワードは必須です';
+    } else if (!passwordStrength.isValid) {
+      newErrors.password = 'パスワード強度が不十分です';
+    }
+    
+    // Validate confirmPassword
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'パスワードの確認は必須です';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'パスワードが一致しません';
+    }
+    
+    // Validate firstName
+    if (!formData.firstName) {
+      newErrors.firstName = '名前は必須です';
+    } else if (!validateName(formData.firstName)) {
+      newErrors.firstName = '有効な名前を入力してください';
+    }
+    
+    // Validate lastName
+    if (!formData.lastName) {
+      newErrors.lastName = '苗字は必須です';
+    } else if (!validateName(formData.lastName)) {
+      newErrors.lastName = '有効な苗字を入力してください';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0 && passwordStrength.isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,7 +161,15 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     setErrors({});
 
     try {
-      const response = await authApi.register(formData);
+      console.log('Submitting registration with data:', formData);
+      const response = await authApi.register({
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        firstName: formData.firstName,
+        lastName: formData.lastName
+      });
+      console.log('Registration successful:', response);
       onSuccess(response.message || '登録が完了しました。確認メールをお送りしましたので、メールをご確認ください。');
     } catch (error: any) {
       console.error('Registration error:', error);

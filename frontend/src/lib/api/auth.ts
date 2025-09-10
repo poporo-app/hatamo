@@ -9,7 +9,7 @@ import {
   ResendVerificationResponse,
 } from '@/types/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 class ApiError extends Error {
   constructor(public status: number, message: string, public data?: any) {
@@ -24,6 +24,12 @@ async function apiRequest<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
+  console.log('API Request:', {
+    url,
+    method: options.method || 'GET',
+    body: options.body
+  });
+  
   const config: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -35,6 +41,12 @@ async function apiRequest<T>(
   try {
     const response = await fetch(url, config);
     const data = await response.json();
+    
+    console.log('API Response:', {
+      status: response.status,
+      ok: response.ok,
+      data
+    });
 
     if (!response.ok) {
       throw new ApiError(
@@ -60,9 +72,18 @@ export const authApi = {
    * Register a new user
    */
   register: async (data: RegisterRequest): Promise<RegisterResponse> => {
+    // Convert camelCase to snake_case for backend API
+    const requestData = {
+      email: data.email,
+      password: data.password,
+      first_name: data.firstName,
+      last_name: data.lastName,
+      phone: '' // Phone field is optional in backend
+    };
+    
     return apiRequest<RegisterResponse>('/api/v1/auth/register', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(requestData),
     });
   },
 

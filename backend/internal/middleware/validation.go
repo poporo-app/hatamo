@@ -160,8 +160,9 @@ func ValidateName(name, fieldName string) *ValidationError {
 		}
 	}
 
-	// Check for invalid characters (allow letters, spaces, hyphens, apostrophes)
-	validName := regexp.MustCompile(`^[a-zA-Z\s\-']+$`)
+	// Check for invalid characters (allow letters including Japanese, spaces, hyphens, apostrophes)
+	// Allow: Latin letters, Japanese characters (Hiragana, Katakana, Kanji), spaces, hyphens, apostrophes
+	validName := regexp.MustCompile(`^[a-zA-Z\p{Hiragana}\p{Katakana}\p{Han}\s\-'・]+$`)
 	if !validName.MatchString(name) {
 		return &ValidationError{
 			Field:   fieldName,
