@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 
 interface HeaderProps {
-  role: 'user' | 'sponsor' | 'admin';
+  role: 'user' | 'business' | 'admin';
 }
 
 export default function Header({ role }: HeaderProps) {
@@ -18,8 +18,8 @@ export default function Header({ role }: HeaderProps) {
     switch (role) {
       case 'user':
         return 'bg-blue-900'; // ブルー系（利用者）
-      case 'sponsor':
-        return 'bg-green-900'; // グリーン系（スポンサー）
+      case 'business':
+        return 'bg-green-900'; // グリーン系（事業者）
       case 'admin':
         return 'bg-purple-900'; // パープル系（管理者）
     }
@@ -29,8 +29,8 @@ export default function Header({ role }: HeaderProps) {
     switch (role) {
       case 'user':
         return 'HATAMO マッチングサービス';
-      case 'sponsor':
-        return 'HATAMO スポンサー管理';
+      case 'business':
+        return 'HATAMO 事業者管理';
       case 'admin':
         return 'HATAMO 管理者ダッシュボード';
     }
@@ -45,18 +45,18 @@ export default function Header({ role }: HeaderProps) {
           { href: '/search', label: '検索' },
           { href: '/mypage', label: 'マイページ' },
         ];
-      case 'sponsor':
+      case 'business':
         return [
-          { href: '/sponsor', label: 'ダッシュボード' },
-          { href: '/sponsor/applications', label: '案件一覧' },
-          { href: '/sponsor/messages', label: 'メッセージ' },
-          { href: '/sponsor/sales', label: '売上明細' },
-          { href: '/sponsor/profile', label: 'プロフィール' },
+          { href: '/business', label: 'ダッシュボード' },
+          { href: '/business/applications', label: '案件一覧' },
+          { href: '/business/messages', label: 'メッセージ' },
+          { href: '/business/sales', label: '売上明細' },
+          { href: '/business/profile', label: 'プロフィール' },
         ];
       case 'admin':
         return [
           { href: '/admin', label: 'ダッシュボード' },
-          { href: '/admin/sponsors', label: 'スポンサー審査' },
+          { href: '/admin/business', label: '事業者審査' },
           { href: '/admin/listings', label: '掲載管理' },
           { href: '/admin/applications', label: '申込管理' },
           { href: '/admin/settlements', label: '精算管理' },

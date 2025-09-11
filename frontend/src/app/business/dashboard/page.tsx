@@ -2,10 +2,8 @@ import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 import Card from '@/components/common/Card';
 import Link from 'next/link';
-import { getAppRole } from '@/lib/config';
 
-export default function SponsorDashboard() {
-  const role = getAppRole();
+export default function BusinessDashboard() {
   const stats = [
     { label: '今月の申込数', value: '24', change: '+12%' },
     { label: '今月の売上', value: '¥480,000', change: '+8%' },
@@ -21,11 +19,11 @@ export default function SponsorDashboard() {
 
   return (
     <>
-      <Header role={role} />
+      <Header role="business" />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">スポンサーダッシュボード</h1>
+          <h1 className="text-3xl font-bold text-gray-800">事業者ダッシュボード</h1>
           <p className="text-gray-600 mt-2">ビジネスの状況を一目で確認</p>
         </div>
 
@@ -73,22 +71,22 @@ export default function SponsorDashboard() {
                 </tbody>
               </table>
             </div>
-            <Link href="/sponsor/applications" className="text-green-600 hover:underline text-sm mt-4 inline-block">
+            <Link href="/business/applications" className="text-green-600 hover:underline text-sm mt-4 inline-block">
               すべての申込を見る →
             </Link>
           </Card>
 
           <Card title="クイックアクション">
             <div className="space-y-3">
-              <Link href="/sponsor/services/new" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+              <Link href="/business/services/new" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
                 <div className="font-medium text-green-900">新しいサービスを追加</div>
                 <div className="text-sm text-green-700">サービスを追加して収益を増やしましょう</div>
               </Link>
-              <Link href="/sponsor/messages" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+              <Link href="/business/messages" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
                 <div className="font-medium text-green-900">メッセージを確認</div>
                 <div className="text-sm text-green-700">5件の未読メッセージがあります</div>
               </Link>
-              <Link href="/sponsor/profile" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+              <Link href="/business/profile" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
                 <div className="font-medium text-green-900">プロフィールを編集</div>
                 <div className="text-sm text-green-700">プロフィールを充実させて信頼性を高めましょう</div>
               </Link>
