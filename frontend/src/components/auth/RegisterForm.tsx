@@ -181,7 +181,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     e.preventDefault();
     
     if (!validateAllFields()) {
-      onError('入力内容をご確認ください');
+      // Don't show general error message, field-specific errors are shown
       return;
     }
 
@@ -189,19 +189,42 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     setErrors({});
 
     try {
-      console.log('Submitting registration with data:', formData);
       const response = await authApi.register({
         email: formData.email,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         firstName: formData.firstName,
-        lastName: formData.lastName
+        lastName: formData.lastName,
+        firstNameKana: formData.firstNameKana,
+        lastNameKana: formData.lastNameKana
       });
-      console.log('Registration successful:', response);
       onSuccess(response.message || '登録が完了しました。確認メールをお送りしましたので、メールをご確認ください。');
     } catch (error: any) {
-      console.error('Registration error:', error);
-      onError(error.message || '登録に失敗しました。もう一度お試しください。');
+      
+      // Handle server-side validation errors
+      if (error.data && error.data.errors && Array.isArray(error.data.errors)) {
+        const serverErrors: FormErrors = {};
+        error.data.errors.forEach((err: any) => {
+          // Map backend field names to frontend field names
+          const fieldMap: { [key: string]: keyof FormErrors } = {
+            'email': 'email',
+            'password': 'password',
+            'first_name': 'firstName',
+            'last_name': 'lastName',
+            'first_name_kana': 'firstNameKana',
+            'last_name_kana': 'lastNameKana'
+          };
+          
+          const frontendField = fieldMap[err.field];
+          if (frontendField) {
+            serverErrors[frontendField] = err.message;
+          }
+        });
+        setErrors(serverErrors);
+        // Don't show general error message when there are field-specific errors
+      } else {
+        onError(error.message || '登録に失敗しました。もう一度お試しください。');
+      }
     } finally {
       setIsLoading(false);
     }
