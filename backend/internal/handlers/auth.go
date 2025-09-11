@@ -292,6 +292,126 @@ func (h *AuthHandler) ResendVerificationEmail(c *gin.Context) {
 	})
 }
 
+// LoginUser handles user login
+func (h *AuthHandler) LoginUser(c *gin.Context) {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("Login binding error: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "不正なリクエスト",
+			"message": "入力内容を確認してください",
+		})
+		return
+	}
+	
+	// Manual validation
+	if req.Email == "" || req.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "不正なリクエスト",
+			"message": "メールアドレスとパスワードは必須です",
+		})
+		return
+	}
+
+	// Normalize email
+	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
+
+	// Validate email format
+	if emailErr := middleware.ValidateEmail(req.Email); emailErr != nil {
+		validationErrors := []middleware.ValidationError{*emailErr}
+		c.JSON(http.StatusBadRequest, middleware.CreateValidationErrorResponse(validationErrors))
+		return
+	}
+
+	// Find user by email
+	var user models.User
+	if err := h.db.Where("email = ?", req.Email).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Don't reveal whether the email exists or not for security
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error":   "認証エラー",
+				"message": "メールアドレスまたはパスワードが違います",
+			})
+			return
+		}
+		log.Printf("Database error finding user: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "内部エラー",
+			"message": "しばらくしてからもう一度お試しください",
+		})
+		return
+	}
+
+	// Check if email is verified
+	if !user.IsEmailVerified() {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "メール未確認",
+			"message": "メールアドレスの確認が必要です。確認メールをご確認ください",
+		})
+		return
+	}
+
+	// Verify password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error":   "認証エラー",
+			"message": "メールアドレスまたはパスワードが違います",
+		})
+		return
+	}
+
+	// Generate JWT token
+	token, err := utils.GenerateJWT(
+		user.ID,
+		user.Email,
+		user.FirstName,
+		user.LastName,
+		string(user.Role),
+		h.config.App.JWTSecret,
+	)
+	if err != nil {
+		log.Printf("Error generating JWT token: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "内部エラー",
+			"message": "ログイン処理に失敗しました",
+		})
+		return
+	}
+
+	// Generate refresh token
+	refreshToken, err := utils.GenerateRefreshToken(
+		user.ID,
+		user.Email,
+		h.config.App.JWTSecret,
+	)
+	if err != nil {
+		log.Printf("Error generating refresh token: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "内部エラー",
+			"message": "ログイン処理に失敗しました",
+		})
+		return
+	}
+
+	// Update last login time
+	now := time.Now()
+	if err := h.db.Model(&user).Update("last_login_at", now).Error; err != nil {
+		log.Printf("Error updating last login time: %v", err)
+		// Don't return error, as login was successful
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":       "ログインに成功しました",
+		"token":         token,
+		"refresh_token": refreshToken,
+		"user":          user.ToResponse(),
+	})
+}
+
 // GetUserProfile gets user profile (for authenticated users)
 func (h *AuthHandler) GetUserProfile(c *gin.Context) {
 	// This would typically require authentication middleware
@@ -307,6 +427,7 @@ func (h *AuthHandler) RegisterRoutes(r *gin.RouterGroup) {
 	auth := r.Group("/auth")
 	{
 		auth.POST("/register", middleware.RateLimitMiddleware(), h.RegisterUser)
+		auth.POST("/login", middleware.RateLimitMiddleware(), h.LoginUser)
 		auth.GET("/verify-email", h.VerifyEmail)
 		auth.POST("/resend-verification", middleware.RateLimitMiddleware(), h.ResendVerificationEmail)
 		auth.GET("/profile", h.GetUserProfile) // Requires auth middleware in production

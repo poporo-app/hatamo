@@ -41,8 +41,9 @@ type EmailConfig struct {
 }
 
 type AppConfig struct {
-	BaseURL string
-	Name    string
+	BaseURL   string
+	Name      string
+	JWTSecret string
 }
 
 func Load() *Config {
@@ -70,8 +71,9 @@ func Load() *Config {
 			FromName:     getEnv("FROM_NAME", "HATAMO"),
 		},
 		App: AppConfig{
-			BaseURL: getEnv("APP_BASE_URL", "http://localhost:3000"),
-			Name:    getEnv("APP_NAME", "HATAMO"),
+			BaseURL:   getEnv("APP_BASE_URL", "http://localhost:3000"),
+			Name:      getEnv("APP_NAME", "HATAMO"),
+			JWTSecret: getEnv("JWT_SECRET", "your-secret-key-change-this-in-production"),
 		},
 	}
 }
