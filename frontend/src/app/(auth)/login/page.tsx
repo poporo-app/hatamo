@@ -2,10 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api/auth';
 import { LoginRequest } from '@/types/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { login: authLogin } = useAuth();
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
@@ -60,18 +64,24 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(formData);
       
-      // Store token and user data
-      if (typeof window !== 'undefined') {
-        if (response.token) {
+      // Store token and user data using auth context
+      if (response.token && response.user) {
+        if (formData.rememberMe) {
           localStorage.setItem('auth_token', response.token);
-        }
-        if (response.user) {
+          localStorage.setItem('refresh_token', response.refresh_token || '');
           localStorage.setItem('user_data', JSON.stringify(response.user));
+        } else {
+          sessionStorage.setItem('auth_token', response.token);
+          sessionStorage.setItem('refresh_token', response.refresh_token || '');
+          sessionStorage.setItem('user_data', JSON.stringify(response.user));
         }
+        
+        // Update auth context
+        authLogin(response.token, response.refresh_token || '', response.user);
+        
+        // Redirect to home page
+        router.push('/');
       }
-
-      // Redirect to dashboard or home page
-      window.location.href = '/';
     } catch (error: any) {
       console.error('Login error:', error);
       setErrors({

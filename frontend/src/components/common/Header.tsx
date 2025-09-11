@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 
 interface HeaderProps {
   role: 'user' | 'sponsor' | 'admin';
@@ -9,6 +11,8 @@ interface HeaderProps {
 
 export default function Header({ role }: HeaderProps) {
   const pathname = usePathname();
+  const { isAuthenticated, user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   
   const getThemeClasses = () => {
     switch (role) {
@@ -83,9 +87,54 @@ export default function Header({ role }: HeaderProps) {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <button className="bg-black bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-md transition-colors">
-              ログイン
-            </button>
+            {isAuthenticated && user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 bg-black bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-md transition-colors"
+                >
+                  <span className="text-sm">👤</span>
+                  <span>{user.lastName} {user.firstName}</span>
+                  <span className="text-xs">▼</span>
+                </button>
+                
+                {showUserMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                    <Link
+                      href="/mypage"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      マイページ
+                    </Link>
+                    <Link
+                      href="/settings"
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      設定
+                    </Link>
+                    <hr className="border-gray-700 my-1" />
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        logout();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+                    >
+                      ログアウト
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link 
+                href="/login"
+                className="bg-black bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-md transition-colors"
+              >
+                ログイン
+              </Link>
+            )}
           </div>
         </div>
       </div>
