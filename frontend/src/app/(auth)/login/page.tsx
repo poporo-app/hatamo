@@ -83,9 +83,9 @@ export default function LoginPage() {
         router.push('/');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      // Don't log to console to prevent error display in bottom left
       setErrors({
-        general: error.message || 'ログインに失敗しました。メールアドレスとパスワードをご確認ください。'
+        general: 'メールアドレスまたはパスワードが違います'
       });
     } finally {
       setIsLoading(false);
