@@ -43,6 +43,7 @@ type User struct {
 	Role                   UserRole   `json:"role" gorm:"type:enum('user','sponsor','admin');default:'user'"`
 	EmailVerifiedAt        *time.Time `json:"email_verified_at" gorm:"index"`
 	EmailVerificationToken *string    `json:"-" gorm:"size:255;index"`
+	LastLoginAt            *time.Time `json:"last_login_at"`
 	CreatedAt              time.Time  `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt              time.Time  `json:"updated_at" gorm:"autoUpdateTime"`
 	DeletedAt              *time.Time `json:"deleted_at" gorm:"index"`

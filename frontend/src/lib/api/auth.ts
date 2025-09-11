@@ -81,10 +81,23 @@ export const authApi = {
    * Login user
    */
   login: async (data: LoginRequest): Promise<LoginResponse> => {
-    return apiRequest<LoginResponse>('/api/v1/auth/login', {
+    const requestData = {
+      email: data.email,
+      password: data.password,
+    };
+    
+    const response = await apiRequest<any>('/api/v1/auth/login', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(requestData),
     });
+    
+    return {
+      success: true,
+      message: response.message,
+      token: response.token,
+      refresh_token: response.refresh_token,
+      user: response.user,
+    };
   },
 
   /**
