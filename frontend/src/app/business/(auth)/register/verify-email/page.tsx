@@ -61,7 +61,7 @@ export default function BusinessVerifyEmailPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/business/login"
+              href="/login"
               className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium rounded-lg transition-all duration-200 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
               ログインページへ
@@ -79,7 +79,7 @@ export default function BusinessVerifyEmailPage() {
       <div className="mt-8 text-center">
         <p className="text-gray-400 text-sm">
           メールアドレスを間違えて登録した場合は、
-          <Link href="/business/register" className="text-green-400 hover:text-green-300">
+          <Link href="/register" className="text-green-400 hover:text-green-300">
             もう一度登録
           </Link>
           してください。

@@ -51,15 +51,17 @@ services:
     networks:
       - hatamo-network
 
-  frontend-sponsor:
+  frontend-business:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.sponsor
+      dockerfile: Dockerfile.business
     ports:
-      - "3002:3002"
+      - "3002:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - NEXT_PUBLIC_APP_ROLE=sponsor
+      - NEXT_PUBLIC_APP_ROLE=business
+      - NODE_ENV=development
+    command: npm run dev
     depends_on:
       - backend
     volumes:

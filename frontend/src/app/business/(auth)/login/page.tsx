@@ -191,7 +191,7 @@ export default function BusinessLoginPage() {
               />
               <span className="ml-2 text-sm text-gray-300">ログイン状態を保持</span>
             </label>
-            <Link href="/business/forgot-password" className="text-sm text-green-400 hover:text-green-300 transition-colors">
+            <Link href="/forgot-password" className="text-sm text-green-400 hover:text-green-300 transition-colors">
               パスワードを忘れた方
             </Link>
           </div>
@@ -236,7 +236,7 @@ export default function BusinessLoginPage() {
           HATAMO事業者として収益を得ませんか？
         </p>
         <Link 
-          href="/business/register" 
+          href="/register" 
           className="inline-block w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-medium rounded-lg transition-all duration-200 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-gray-900"
         >
           事業者として新規登録

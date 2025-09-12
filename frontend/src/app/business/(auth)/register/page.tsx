@@ -138,7 +138,7 @@ export default function BusinessRegisterPage() {
       const response = await businessApi.register(formData);
       
       // Redirect to verification notice page
-      router.push('/business/register/verify-email');
+      router.push('/register/verify-email');
     } catch (error: any) {
       if (error.response?.data?.errors) {
         const fieldErrors: Record<string, string> = {};
@@ -559,7 +559,7 @@ export default function BusinessRegisterPage() {
         <p className="text-gray-300 text-sm">
           既にアカウントをお持ちの方は{' '}
           <Link 
-            href="/business/login" 
+            href="/login" 
             className="text-green-400 hover:text-green-300 font-medium transition-colors duration-200"
           >
             ログイン
