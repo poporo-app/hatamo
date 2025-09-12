@@ -3,13 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authApi } from '@/lib/api/auth';
-import { CreateUserRequest } from '@/types/auth';
+import { businessApi, BusinessRegisterRequest } from '@/lib/api/business';
 
 export default function BusinessRegisterPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<CreateUserRequest & { businessName?: string; businessType?: string }>({
+  const [formData, setFormData] = useState<BusinessRegisterRequest>({
     email: '',
     password: '',
     confirmPassword: '',
@@ -20,7 +19,12 @@ export default function BusinessRegisterPage() {
     phone: '',
     acceptTerms: false,
     businessName: '',
-    businessType: '',
+    businessNameKana: '',
+    businessType: 'corporation',
+    description: '',
+    website: '',
+    address: '',
+    postalCode: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -131,8 +135,7 @@ export default function BusinessRegisterPage() {
     setErrors({});
 
     try {
-      // TODO: Update to use business-specific registration endpoint
-      const response = await authApi.register(formData);
+      const response = await businessApi.register(formData);
       
       // Redirect to verification notice page
       router.push('/business/register/verify-email');
@@ -238,7 +241,7 @@ export default function BusinessRegisterPage() {
                 </label>
                 <select
                   value={formData.businessType}
-                  onChange={(e) => handleFieldChange('businessType', e.target.value)}
+                  onChange={(e) => handleFieldChange('businessType', e.target.value as BusinessRegisterRequest['businessType'])}
                   className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
                     errors.businessType 
                       ? 'border-red-400 focus:ring-red-400' 
@@ -246,7 +249,6 @@ export default function BusinessRegisterPage() {
                   }`}
                   disabled={isLoading}
                 >
-                  <option value="">選択してください</option>
                   <option value="corporation">株式会社</option>
                   <option value="limited">有限会社</option>
                   <option value="partnership">合同会社</option>

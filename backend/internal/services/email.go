@@ -190,6 +190,127 @@ func (es *EmailService) renderVerificationTemplate(data EmailData) (string, erro
 	return buf.String(), nil
 }
 
+// SendBusinessVerificationEmail sends a verification email to business users
+func (es *EmailService) SendBusinessVerificationEmail(recipientEmail, recipientName, businessName, verificationToken string) error {
+	log.Printf("Attempting to send business verification email to %s via SMTP server %s:%d", 
+		recipientEmail, es.config.SMTPHost, es.config.SMTPPort)
+	
+	// URL-encode the token for safe inclusion in URL
+	encodedToken := url.QueryEscape(verificationToken)
+	verificationURL := fmt.Sprintf("%s/business/verify-email?token=%s", es.appConfig.BaseURL, encodedToken)
+	
+	emailData := struct {
+		EmailData
+		BusinessName string
+	}{
+		EmailData: EmailData{
+			RecipientName:   recipientName,
+			RecipientEmail:  recipientEmail,
+			VerificationURL: verificationURL,
+			AppName:         es.appConfig.Name,
+			AppBaseURL:      es.appConfig.BaseURL,
+		},
+		BusinessName: businessName,
+	}
+
+	subject := fmt.Sprintf("%s 事業者登録 - メールアドレスの確認", es.appConfig.Name)
+	
+	htmlBody := es.renderBusinessVerificationHTML(emailData)
+	plainBody := es.renderBusinessVerificationPlain(emailData)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", m.FormatAddress(es.config.FromEmail, es.config.FromName))
+	m.SetHeader("To", recipientEmail)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", plainBody)
+	m.AddAlternative("text/html", htmlBody)
+
+	log.Printf("Business email message prepared. Sending to SMTP server...")
+	
+	if err := es.dialer.DialAndSend(m); err != nil {
+		log.Printf("Failed to send business verification email to %s: %v", recipientEmail, err)
+		return fmt.Errorf("failed to send email: %w", err)
+	}
+
+	log.Printf("Business verification email sent successfully to %s", recipientEmail)
+	return nil
+}
+
+func (es *EmailService) renderBusinessVerificationHTML(data struct {
+	EmailData
+	BusinessName string
+}) string {
+	return fmt.Sprintf(`
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981 0%%, #059669 100%%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-radius: 0 0 10px 10px; }
+        .button { display: inline-block; padding: 12px 30px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>%s 事業者登録</h1>
+        </div>
+        <div class="content">
+            <h2>ようこそ、%s 様</h2>
+            <p>事業者名: <strong>%s</strong></p>
+            <p>%s への事業者登録ありがとうございます。</p>
+            <p>以下のボタンをクリックして、メールアドレスの確認を完了してください：</p>
+            <div style="text-align: center;">
+                <a href="%s" class="button">メールアドレスを確認</a>
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">
+                このリンクは24時間有効です。期限が切れた場合は、新しい確認メールをリクエストしてください。
+            </p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+            <p style="color: #6b7280; font-size: 14px;">
+                このメールに心当たりがない場合は、無視していただいて構いません。
+            </p>
+        </div>
+        <div class="footer">
+            <p>© 2024 %s. All rights reserved.</p>
+            <p>このメールは自動送信されています。返信はできません。</p>
+        </div>
+    </div>
+</body>
+</html>
+`, data.AppName, data.RecipientName, data.BusinessName, data.AppName, data.VerificationURL, data.AppName)
+}
+
+func (es *EmailService) renderBusinessVerificationPlain(data struct {
+	EmailData
+	BusinessName string
+}) string {
+	return fmt.Sprintf(`
+%s 事業者登録
+
+ようこそ、%s 様
+
+事業者名: %s
+
+%s への事業者登録ありがとうございます。
+
+以下のリンクをクリックして、メールアドレスの確認を完了してください：
+%s
+
+このリンクは24時間有効です。
+
+このメールに心当たりがない場合は、無視していただいて構いません。
+
+---
+© 2024 %s. All rights reserved.
+`, data.AppName, data.RecipientName, data.BusinessName, data.AppName, data.VerificationURL, data.AppName)
+}
+
 func (es *EmailService) renderPlainVerificationEmail(data EmailData) string {
 	return fmt.Sprintf(`Welcome to %s
 

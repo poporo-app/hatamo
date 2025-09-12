@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authApi } from '@/lib/api/auth';
-import { LoginRequest } from '@/types/auth';
+import { businessApi, BusinessLoginRequest } from '@/lib/api/business';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function BusinessLoginPage() {
   const router = useRouter();
   const { login: authLogin } = useAuth();
-  const [formData, setFormData] = useState<LoginRequest>({
+  const [formData, setFormData] = useState<BusinessLoginRequest>({
     email: '',
     password: '',
     rememberMe: false,
@@ -25,7 +24,7 @@ export default function BusinessLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleFieldChange = (field: keyof LoginRequest, value: string | boolean) => {
+  const handleFieldChange = (field: keyof BusinessLoginRequest, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear field-specific errors when user starts typing
@@ -62,8 +61,7 @@ export default function BusinessLoginPage() {
     setErrors({});
 
     try {
-      // TODO: Update to use business-specific login endpoint
-      const response = await authApi.login(formData);
+      const response = await businessApi.login(formData);
       
       // Store token and user data using auth context
       if (response.token && response.user) {
@@ -81,7 +79,7 @@ export default function BusinessLoginPage() {
         authLogin(response.token, response.refresh_token || '', response.user);
         
         // Redirect to business dashboard
-        router.push('/business');
+        router.push('/business/dashboard');
       }
     } catch (error: any) {
       // Don't log to console to prevent error display in bottom left
