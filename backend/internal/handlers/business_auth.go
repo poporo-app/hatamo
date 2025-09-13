@@ -123,9 +123,9 @@ func (h *BusinessAuthHandler) RegisterBusiness(c *gin.Context) {
 	// Normalize email
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
 
-	// Check if user already exists
-	var existingUser models.User
-	if err := h.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+	// Check if business auth already exists
+	var existingBusinessAuth models.BusinessAuth
+	if err := h.db.Where("email = ?", req.Email).First(&existingBusinessAuth).Error; err == nil {
 		validationErrors := []middleware.ValidationError{
 			{
 				Field:   "email",
@@ -136,11 +136,25 @@ func (h *BusinessAuthHandler) RegisterBusiness(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, middleware.CreateValidationErrorResponse(validationErrors))
 		return
 	} else if err != gorm.ErrRecordNotFound {
-		log.Printf("Database error checking existing user: %v", err)
+		log.Printf("Database error checking existing business auth: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Internal server error",
 			"message": "Please try again later",
 		})
+		return
+	}
+
+	// Also check if user already exists with this email (for backward compatibility)
+	var existingUser models.User
+	if err := h.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+		validationErrors := []middleware.ValidationError{
+			{
+				Field:   "email",
+				Message: "このメールアドレスは既に登録されています",
+				Code:    "already_exists",
+			},
+		}
+		c.JSON(http.StatusBadRequest, middleware.CreateValidationErrorResponse(validationErrors))
 		return
 	}
 
@@ -169,7 +183,7 @@ func (h *BusinessAuthHandler) RegisterBusiness(c *gin.Context) {
 	// Start transaction
 	tx := h.db.Begin()
 
-	// Create user with business role
+	// Create user with business role (for backward compatibility)
 	var phone *string
 	if req.Phone != "" {
 		phone = &req.Phone
@@ -197,7 +211,49 @@ func (h *BusinessAuthHandler) RegisterBusiness(c *gin.Context) {
 		return
 	}
 
-	// Create business record
+	// Create sponsor record
+	sponsor := models.Sponsor{
+		UserID:             user.ID,
+		CompanyName:        strings.TrimSpace(req.BusinessName),
+		CompanyType:        string(req.BusinessType),
+		RepresentativeName: user.FirstName + " " + user.LastName,
+		Address:            strings.TrimSpace(req.Address),
+		Description:        strings.TrimSpace(req.Description),
+		WebsiteURL:         strings.TrimSpace(req.Website),
+		ApprovalStatus:     models.ApprovalStatusPending,
+	}
+
+	if err := tx.Create(&sponsor).Error; err != nil {
+		tx.Rollback()
+		log.Printf("Error creating sponsor: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal server error",
+			"message": "Failed to create sponsor account",
+		})
+		return
+	}
+
+	// Create business auth record
+	businessAuth := models.BusinessAuth{
+		Email:                      req.Email,
+		PasswordHash:               string(hashedPassword),
+		SponsorID:                  sponsor.ID,
+		IsVerified:                 false,
+		VerificationToken:          &tokenInfo.Token,
+		VerificationTokenExpiresAt: &tokenInfo.ExpiresAt,
+	}
+
+	if err := tx.Create(&businessAuth).Error; err != nil {
+		tx.Rollback()
+		log.Printf("Error creating business auth: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal server error",
+			"message": "Failed to create business authentication",
+		})
+		return
+	}
+
+	// Also create business record for backward compatibility
 	business := models.Business{
 		UserID:           user.ID,
 		BusinessName:     strings.TrimSpace(req.BusinessName),
@@ -224,11 +280,12 @@ func (h *BusinessAuthHandler) RegisterBusiness(c *gin.Context) {
 
 	// Load user with business data for response
 	business.User = user
+	sponsor.User = user
 
 	// Send verification email
 	fullName := user.FirstName + " " + user.LastName
-	if err := h.emailService.SendBusinessVerificationEmail(user.Email, fullName, req.BusinessName, tokenInfo.Token); err != nil {
-		log.Printf("Error sending verification email to %s: %v", user.Email, err)
+	if err := h.emailService.SendBusinessVerificationEmail(req.Email, fullName, req.BusinessName, tokenInfo.Token); err != nil {
+		log.Printf("Error sending verification email to %s: %v", req.Email, err)
 		// Don't return error to user, as account was created successfully
 	}
 
@@ -236,6 +293,7 @@ func (h *BusinessAuthHandler) RegisterBusiness(c *gin.Context) {
 		"message":  "事業者登録が完了しました。メールをご確認ください。",
 		"user":     user.ToResponse(),
 		"business": business.ToResponse(),
+		"sponsor":  sponsor.ToResponse(),
 	})
 }
 
@@ -274,17 +332,101 @@ func (h *BusinessAuthHandler) LoginBusiness(c *gin.Context) {
 		return
 	}
 
-	// Find user by email and role
-	var user models.User
-	if err := h.db.Where("email = ? AND role = ?", req.Email, models.UserRoleSponsor).First(&user).Error; err != nil {
+	// Find business auth by email
+	var businessAuth models.BusinessAuth
+	if err := h.db.Preload("Sponsor").Preload("Sponsor.User").Where("email = ?", req.Email).First(&businessAuth).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error":   "認証エラー",
-				"message": "メールアドレスまたはパスワードが違います",
+			// Fallback to check old user table for backward compatibility
+			var user models.User
+			if err := h.db.Where("email = ? AND role = ?", req.Email, models.UserRoleSponsor).First(&user).Error; err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error":   "認証エラー",
+					"message": "メールアドレスまたはパスワードが違います",
+				})
+				return
+			}
+
+			// Check if email is verified
+			if !user.IsEmailVerified() {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error":   "メール未確認",
+					"message": "メールアドレスの確認が必要です。確認メールをご確認ください",
+				})
+				return
+			}
+
+			// Verify password
+			if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error":   "認証エラー",
+					"message": "メールアドレスまたはパスワードが違います",
+				})
+				return
+			}
+
+			// Get sponsor information for backward compatibility
+			var sponsor models.Sponsor
+			if err := h.db.Where("user_id = ?", user.ID).First(&sponsor).Error; err != nil {
+				log.Printf("Error finding sponsor for user %d: %v", user.ID, err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "内部エラー",
+					"message": "事業者情報の取得に失敗しました",
+				})
+				return
+			}
+			sponsor.User = user
+
+			// Generate JWT token with business role
+			token, err := utils.GenerateJWT(
+				sponsor.ID,
+				user.Email,
+				user.FirstName,
+				user.LastName,
+				"business",
+				h.config.App.JWTSecret,
+			)
+			if err != nil {
+				log.Printf("Error generating JWT token: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "内部エラー",
+					"message": "ログイン処理に失敗しました",
+				})
+				return
+			}
+
+			// Generate refresh token
+			refreshToken, err := utils.GenerateRefreshToken(
+				sponsor.ID,
+				user.Email,
+				h.config.App.JWTSecret,
+			)
+			if err != nil {
+				log.Printf("Error generating refresh token: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "内部エラー",
+					"message": "ログイン処理に失敗しました",
+				})
+				return
+			}
+
+			// Update last login time
+			now := time.Now()
+			if err := h.db.Model(&user).Update("last_login_at", now).Error; err != nil {
+				log.Printf("Error updating last login time: %v", err)
+				// Don't return error, as login was successful
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"message":       "ログインに成功しました",
+				"token":         token,
+				"refresh_token": refreshToken,
+				"user":          user.ToResponse(),
+				"sponsor":       sponsor.ToResponse(),
+				"role":          "business",
 			})
 			return
 		}
-		log.Printf("Database error finding user: %v", err)
+		log.Printf("Database error finding business auth: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "内部エラー",
 			"message": "しばらくしてからもう一度お試しください",
@@ -293,7 +435,7 @@ func (h *BusinessAuthHandler) LoginBusiness(c *gin.Context) {
 	}
 
 	// Check if email is verified
-	if !user.IsEmailVerified() {
+	if !businessAuth.IsEmailVerified() {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error":   "メール未確認",
 			"message": "メールアドレスの確認が必要です。確認メールをご確認ください",
@@ -302,7 +444,7 @@ func (h *BusinessAuthHandler) LoginBusiness(c *gin.Context) {
 	}
 
 	// Verify password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(businessAuth.PasswordHash), []byte(req.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error":   "認証エラー",
 			"message": "メールアドレスまたはパスワードが違います",
@@ -310,25 +452,13 @@ func (h *BusinessAuthHandler) LoginBusiness(c *gin.Context) {
 		return
 	}
 
-	// Get business information
-	var business models.Business
-	if err := h.db.Where("user_id = ?", user.ID).First(&business).Error; err != nil {
-		log.Printf("Error finding business for user %d: %v", user.ID, err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "内部エラー",
-			"message": "事業者情報の取得に失敗しました",
-		})
-		return
-	}
-	business.User = user
-
-	// Generate JWT token
+	// Generate JWT token with business role
 	token, err := utils.GenerateJWT(
-		user.ID,
-		user.Email,
-		user.FirstName,
-		user.LastName,
-		string(user.Role),
+		businessAuth.SponsorID,
+		businessAuth.Email,
+		businessAuth.Sponsor.User.FirstName,
+		businessAuth.Sponsor.User.LastName,
+		"business",
 		h.config.App.JWTSecret,
 	)
 	if err != nil {
@@ -342,8 +472,8 @@ func (h *BusinessAuthHandler) LoginBusiness(c *gin.Context) {
 
 	// Generate refresh token
 	refreshToken, err := utils.GenerateRefreshToken(
-		user.ID,
-		user.Email,
+		businessAuth.SponsorID,
+		businessAuth.Email,
 		h.config.App.JWTSecret,
 	)
 	if err != nil {
@@ -357,7 +487,7 @@ func (h *BusinessAuthHandler) LoginBusiness(c *gin.Context) {
 
 	// Update last login time
 	now := time.Now()
-	if err := h.db.Model(&user).Update("last_login_at", now).Error; err != nil {
+	if err := h.db.Model(&businessAuth).Update("last_login_at", now).Error; err != nil {
 		log.Printf("Error updating last login time: %v", err)
 		// Don't return error, as login was successful
 	}
@@ -366,8 +496,9 @@ func (h *BusinessAuthHandler) LoginBusiness(c *gin.Context) {
 		"message":       "ログインに成功しました",
 		"token":         token,
 		"refresh_token": refreshToken,
-		"user":          user.ToResponse(),
-		"business":      business.ToResponse(),
+		"user":          businessAuth.Sponsor.User.ToResponse(),
+		"sponsor":       businessAuth.Sponsor.ToResponse(),
+		"role":          "business",
 	})
 }
 

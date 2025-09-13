@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS business_auth (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    sponsor_id BIGINT UNSIGNED NOT NULL,
+    is_verified BOOLEAN DEFAULT FALSE,
+    verification_token VARCHAR(255),
+    verification_token_expires_at TIMESTAMP NULL,
+    reset_token VARCHAR(255),
+    reset_token_expires_at TIMESTAMP NULL,
+    last_login_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (sponsor_id) REFERENCES sponsors(id) ON DELETE CASCADE,
+    INDEX idx_business_auth_email (email),
+    INDEX idx_business_auth_sponsor_id (sponsor_id),
+    INDEX idx_business_auth_verification_token (verification_token),
+    INDEX idx_business_auth_reset_token (reset_token)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

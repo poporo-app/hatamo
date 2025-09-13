@@ -73,7 +73,9 @@ export interface BusinessLoginResponse {
   token: string;
   refresh_token: string;
   user: BusinessUser;
-  business: Business;
+  business?: Business;
+  sponsor?: any;
+  role?: string;
 }
 
 export const businessApi = {

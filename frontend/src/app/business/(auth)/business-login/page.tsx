@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { businessApi, BusinessLoginRequest } from '@/lib/api/business';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function BusinessLoginPage() {
   const router = useRouter();
+  const { login: authLogin } = useAuth();
   const [formData, setFormData] = useState<BusinessLoginRequest>({
     email: '',
     password: '',
@@ -63,6 +65,18 @@ export default function BusinessLoginPage() {
       
       // Store token and user data using auth context
       if (response.token && response.user) {
+        // Update user role to business for proper routing
+        const businessUser = {
+          ...response.user,
+          role: 'business',
+          firstName: response.user.first_name,
+          lastName: response.user.last_name
+        };
+        
+        // Use auth context to store credentials
+        authLogin(response.token, response.refresh_token || '', businessUser);
+        
+        // Also store business-specific data
         if (formData.rememberMe) {
           localStorage.setItem('business_auth_token', response.token);
           localStorage.setItem('business_refresh_token', response.refresh_token || '');
