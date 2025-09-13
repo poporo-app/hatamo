@@ -42,14 +42,14 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
   const handleFieldChange = (field: keyof RegisterRequest, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Clear field-specific errors when user starts typing
+    // Clear error for this field when user starts typing
     if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
   const handleFieldBlur = (field: string) => {
-    setTouchedFields(prev => new Set([...prev, field]));
+    setTouchedFields(prev => new Set(prev).add(field));
     validateField(field);
   };
 
@@ -214,7 +214,6 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
       // Reset reCAPTCHA if needed
       setRecaptchaToken('');
     } catch (error: any) {
-      
       // Handle server-side validation errors
       if (error.data && error.data.errors && Array.isArray(error.data.errors)) {
         const serverErrors: FormErrors = {};
@@ -256,14 +255,15 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
       case 1:
         return 'bg-red-500';
       case 2:
-        return 'bg-yellow-500';
+        return 'bg-orange-500';
       case 3:
-        return 'bg-blue-500';
+        return 'bg-yellow-500';
       case 4:
-      case 5:
         return 'bg-green-500';
+      case 5:
+        return 'bg-green-600';
       default:
-        return 'bg-gray-300';
+        return 'bg-gray-500';
     }
   };
 
@@ -277,6 +277,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
       case 3:
         return 'good';
       case 4:
+        return 'strong';
       case 5:
         return 'strong';
       default:
@@ -300,7 +301,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
             className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
               errors.email 
                 ? 'border-red-400 focus:ring-red-400' 
-                : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+                : 'border-gray-600 focus:ring-blue-400 focus:border-transparent'
             }`}
             placeholder="example@email.com"
             disabled={isLoading}
@@ -313,33 +314,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
           )}
         </div>
 
-        {/* First Name */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-300">
-            名前 *
-          </label>
-          <input
-            type="text"
-            value={formData.firstName}
-            onChange={(e) => handleFieldChange('firstName', e.target.value)}
-            onBlur={() => handleFieldBlur('firstName')}
-            className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
-              errors.firstName 
-                ? 'border-red-400 focus:ring-red-400' 
-                : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
-            }`}
-            placeholder="太郎"
-            disabled={isLoading}
-          />
-          {errors.firstName && (
-            <p className="text-sm text-red-400 flex items-center">
-              <span className="mr-1">⚠️</span>
-              {errors.firstName}
-            </p>
-          )}
-        </div>
-
-        {/* Last Name */}
+        {/* Last Name Field */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-300">
             苗字 *
@@ -352,9 +327,9 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
             className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
               errors.lastName 
                 ? 'border-red-400 focus:ring-red-400' 
-                : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+                : 'border-gray-600 focus:ring-blue-400 focus:border-transparent'
             }`}
-            placeholder="田中"
+            placeholder="山田"
             disabled={isLoading}
           />
           {errors.lastName && (
@@ -365,54 +340,80 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
           )}
         </div>
 
-        {/* First Name Kana */}
+        {/* First Name Field */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-300">
-            名前（ふりがな）
+            名前 *
           </label>
           <input
             type="text"
-            value={formData.firstNameKana || ''}
-            onChange={(e) => handleFieldChange('firstNameKana', e.target.value)}
-            onBlur={() => handleFieldBlur('firstNameKana')}
+            value={formData.firstName}
+            onChange={(e) => handleFieldChange('firstName', e.target.value)}
+            onBlur={() => handleFieldBlur('firstName')}
             className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
-              errors.firstNameKana 
+              errors.firstName 
                 ? 'border-red-400 focus:ring-red-400' 
-                : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+                : 'border-gray-600 focus:ring-blue-400 focus:border-transparent'
             }`}
-            placeholder="たろう"
+            placeholder="太郎"
             disabled={isLoading}
           />
-          {errors.firstNameKana && (
+          {errors.firstName && (
             <p className="text-sm text-red-400 flex items-center">
               <span className="mr-1">⚠️</span>
-              {errors.firstNameKana}
+              {errors.firstName}
             </p>
           )}
         </div>
 
-        {/* Last Name Kana */}
+        {/* Last Name Kana Field */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-300">
-            苗字（ふりがな）
+            苗字（カナ）
           </label>
           <input
             type="text"
-            value={formData.lastNameKana || ''}
+            value={formData.lastNameKana}
             onChange={(e) => handleFieldChange('lastNameKana', e.target.value)}
             onBlur={() => handleFieldBlur('lastNameKana')}
             className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
               errors.lastNameKana 
                 ? 'border-red-400 focus:ring-red-400' 
-                : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+                : 'border-gray-600 focus:ring-blue-400 focus:border-transparent'
             }`}
-            placeholder="たなか"
+            placeholder="ヤマダ"
             disabled={isLoading}
           />
           {errors.lastNameKana && (
             <p className="text-sm text-red-400 flex items-center">
               <span className="mr-1">⚠️</span>
               {errors.lastNameKana}
+            </p>
+          )}
+        </div>
+
+        {/* First Name Kana Field */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">
+            名前（カナ）
+          </label>
+          <input
+            type="text"
+            value={formData.firstNameKana}
+            onChange={(e) => handleFieldChange('firstNameKana', e.target.value)}
+            onBlur={() => handleFieldBlur('firstNameKana')}
+            className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
+              errors.firstNameKana 
+                ? 'border-red-400 focus:ring-red-400' 
+                : 'border-gray-600 focus:ring-blue-400 focus:border-transparent'
+            }`}
+            placeholder="タロウ"
+            disabled={isLoading}
+          />
+          {errors.firstNameKana && (
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.firstNameKana}
             </p>
           )}
         </div>
@@ -431,9 +432,9 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
               className={`w-full px-4 py-3 pr-12 bg-gray-800 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200 ${
                 errors.password 
                   ? 'border-red-400 focus:ring-red-400' 
-                  : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+                  : 'border-gray-600 focus:ring-blue-400 focus:border-transparent'
               }`}
-              placeholder="パスワードを入力"
+              placeholder="8文字以上の強力なパスワード"
               disabled={isLoading}
             />
             <button
@@ -483,7 +484,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
         {/* Confirm Password Field */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-300">
-            パスワード確認 *
+            パスワード（確認） *
           </label>
           <div className="relative">
             <input
@@ -496,9 +497,9 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
                   ? 'border-red-400 focus:ring-red-400' 
                   : formData.confirmPassword && formData.password === formData.confirmPassword
                   ? 'border-green-400 focus:ring-green-400'
-                  : 'border-gray-600 focus:ring-blue-400 focus:border-blue-400'
+                  : 'border-gray-600 focus:ring-blue-400 focus:border-transparent'
               }`}
-              placeholder="パスワードをもう一度入力"
+              placeholder="パスワードを再入力"
               disabled={isLoading}
             />
             <button
@@ -554,7 +555,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
           )}
         </div>
 
-        {/* Submit Button */
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading || !passwordStrength.isValid || !recaptchaToken}
