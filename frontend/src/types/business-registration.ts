@@ -1,18 +1,16 @@
 export interface BusinessRegistrationData {
-  email: string;
+  representativeName: string;
   location: string;
   phone: string;
   categories: string[];
-  representativeName: string;
   capital?: number;
 }
 
 export interface BusinessRegistrationErrors {
-  email?: string;
+  representativeName?: string;
   location?: string;
   phone?: string;
   categories?: string;
-  representativeName?: string;
   capital?: string;
 }
 

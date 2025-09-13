@@ -19,11 +19,10 @@ export default function BusinessRegistrationForm({
 }: BusinessRegistrationFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState<BusinessRegistrationData>({
-    email: '',
+    representativeName: '',
     location: '',
     phone: '',
     categories: [],
-    representativeName: '',
     capital: undefined
   });
 
@@ -62,13 +61,14 @@ export default function BusinessRegistrationForm({
     const newErrors: BusinessRegistrationErrors = { ...errors };
 
     switch (field) {
-      case 'email':
-        if (!formData.email) {
-          newErrors.email = 'メールアドレスは必須です';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-          newErrors.email = '有効なメールアドレスを入力してください';
+
+      case 'representativeName':
+        if (!formData.representativeName) {
+          newErrors.representativeName = '代表者名は必須です';
+        } else if (formData.representativeName.length < 2) {
+          newErrors.representativeName = '代表者名を正しく入力してください';
         } else {
-          delete newErrors.email;
+          delete newErrors.representativeName;
         }
         break;
 
@@ -125,10 +125,10 @@ export default function BusinessRegistrationForm({
   const validateAllFields = (): boolean => {
     const newErrors: BusinessRegistrationErrors = {};
 
-    if (!formData.email) {
-      newErrors.email = 'メールアドレスは必須です';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '有効なメールアドレスを入力してください';
+    if (!formData.representativeName) {
+      newErrors.representativeName = '代表者名は必須です';
+    } else if (formData.representativeName.length < 2) {
+      newErrors.representativeName = '代表者名を正しく入力してください';
     }
 
     if (!formData.location) {
@@ -141,12 +141,6 @@ export default function BusinessRegistrationForm({
       newErrors.phone = '電話番号は必須です';
     } else if (!/^[\d-]+$/.test(formData.phone) || formData.phone.length < 10) {
       newErrors.phone = '有効な電話番号を入力してください';
-    }
-
-    if (!formData.representativeName) {
-      newErrors.representativeName = '代表者名は必須です';
-    } else if (formData.representativeName.length < 2) {
-      newErrors.representativeName = '代表者名を正しく入力してください';
     }
 
     if (formData.categories.length === 0) {
@@ -201,29 +195,29 @@ export default function BusinessRegistrationForm({
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email */}
+          {/* Representative Name */}
           <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-              メールアドレス <span className="text-red-400">*</span>
+            <label htmlFor="representativeName" className="block text-sm font-medium text-gray-300">
+              代表者名 <span className="text-red-400">*</span>
             </label>
             <input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleFieldChange('email', e.target.value)}
-              onBlur={() => handleFieldBlur('email')}
+              id="representativeName"
+              type="text"
+              value={formData.representativeName}
+              onChange={(e) => handleFieldChange('representativeName', e.target.value)}
+              onBlur={() => handleFieldBlur('representativeName')}
               className={`w-full px-4 py-3 bg-gray-900 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                errors.email 
+                errors.representativeName 
                   ? 'border-red-400 focus:ring-red-400' 
                   : 'border-gray-700 focus:ring-purple-400 focus:border-transparent'
               }`}
-              placeholder="business@example.com"
+              placeholder="山田 太郎"
               disabled={isLoading}
             />
-            {errors.email && (
+            {errors.representativeName && (
               <p className="text-sm text-red-400 flex items-center">
                 <span className="mr-1">⚠️</span>
-                {errors.email}
+                {errors.representativeName}
               </p>
             )}
           </div>
@@ -278,33 +272,6 @@ export default function BusinessRegistrationForm({
               <p className="text-sm text-red-400 flex items-center">
                 <span className="mr-1">⚠️</span>
                 {errors.phone}
-              </p>
-            )}
-          </div>
-
-          {/* Representative Name */}
-          <div className="space-y-2">
-            <label htmlFor="representativeName" className="block text-sm font-medium text-gray-300">
-              代表者名 <span className="text-red-400">*</span>
-            </label>
-            <input
-              id="representativeName"
-              type="text"
-              value={formData.representativeName}
-              onChange={(e) => handleFieldChange('representativeName', e.target.value)}
-              onBlur={() => handleFieldBlur('representativeName')}
-              className={`w-full px-4 py-3 bg-gray-900 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                errors.representativeName 
-                  ? 'border-red-400 focus:ring-red-400' 
-                  : 'border-gray-700 focus:ring-purple-400 focus:border-transparent'
-              }`}
-              placeholder="山田 太郎"
-              disabled={isLoading}
-            />
-            {errors.representativeName && (
-              <p className="text-sm text-red-400 flex items-center">
-                <span className="mr-1">⚠️</span>
-                {errors.representativeName}
               </p>
             )}
           </div>
