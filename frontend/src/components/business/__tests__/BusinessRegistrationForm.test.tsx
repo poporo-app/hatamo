@@ -24,7 +24,6 @@ describe('BusinessRegistrationForm', () => {
   it('renders all required form fields', () => {
     render(<BusinessRegistrationForm onSuccess={mockOnSuccess} onError={mockOnError} />);
 
-    expect(screen.getByLabelText(/企業名/)).toBeInTheDocument();
     expect(screen.getByLabelText(/メールアドレス/)).toBeInTheDocument();
     expect(screen.getByLabelText(/所在地/)).toBeInTheDocument();
     expect(screen.getByLabelText(/連絡先電話番号/)).toBeInTheDocument();
@@ -48,7 +47,6 @@ describe('BusinessRegistrationForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText('企業名は必須です')).toBeInTheDocument();
       expect(screen.getByText('メールアドレスは必須です')).toBeInTheDocument();
       expect(screen.getByText('所在地は必須です')).toBeInTheDocument();
       expect(screen.getByText('電話番号は必須です')).toBeInTheDocument();
@@ -98,7 +96,6 @@ describe('BusinessRegistrationForm', () => {
     render(<BusinessRegistrationForm onSuccess={mockOnSuccess} onError={mockOnError} />);
 
     // Fill in all required fields
-    fireEvent.change(screen.getByLabelText(/企業名/), { target: { value: '株式会社テスト' } });
     fireEvent.change(screen.getByLabelText(/メールアドレス/), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/所在地/), { target: { value: '東京都渋谷区テスト1-2-3' } });
     fireEvent.change(screen.getByLabelText(/連絡先電話番号/), { target: { value: '03-1234-5678' } });
@@ -118,7 +115,6 @@ describe('BusinessRegistrationForm', () => {
     render(<BusinessRegistrationForm onSuccess={mockOnSuccess} onError={mockOnError} />);
 
     // Fill in valid data
-    fireEvent.change(screen.getByLabelText(/企業名/), { target: { value: '株式会社テスト' } });
     fireEvent.change(screen.getByLabelText(/メールアドレス/), { target: { value: 'test@example.com' } });
     fireEvent.change(screen.getByLabelText(/所在地/), { target: { value: '東京都渋谷区テスト1-2-3' } });
     fireEvent.change(screen.getByLabelText(/連絡先電話番号/), { target: { value: '03-1234-5678' } });

@@ -1,5 +1,4 @@
 export interface BusinessRegistrationData {
-  companyName: string;
   email: string;
   location: string;
   phone: string;
@@ -9,7 +8,6 @@ export interface BusinessRegistrationData {
 }
 
 export interface BusinessRegistrationErrors {
-  companyName?: string;
   email?: string;
   location?: string;
   phone?: string;

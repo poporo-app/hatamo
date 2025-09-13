@@ -19,7 +19,6 @@ export default function BusinessRegistrationForm({
 }: BusinessRegistrationFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState<BusinessRegistrationData>({
-    companyName: '',
     email: '',
     location: '',
     phone: '',
@@ -63,16 +62,6 @@ export default function BusinessRegistrationForm({
     const newErrors: BusinessRegistrationErrors = { ...errors };
 
     switch (field) {
-      case 'companyName':
-        if (!formData.companyName) {
-          newErrors.companyName = '企業名は必須です';
-        } else if (formData.companyName.length < 2) {
-          newErrors.companyName = '企業名は2文字以上で入力してください';
-        } else {
-          delete newErrors.companyName;
-        }
-        break;
-
       case 'email':
         if (!formData.email) {
           newErrors.email = 'メールアドレスは必須です';
@@ -135,12 +124,6 @@ export default function BusinessRegistrationForm({
 
   const validateAllFields = (): boolean => {
     const newErrors: BusinessRegistrationErrors = {};
-
-    if (!formData.companyName) {
-      newErrors.companyName = '企業名は必須です';
-    } else if (formData.companyName.length < 2) {
-      newErrors.companyName = '企業名は2文字以上で入力してください';
-    }
 
     if (!formData.email) {
       newErrors.email = 'メールアドレスは必須です';
@@ -218,38 +201,13 @@ export default function BusinessRegistrationForm({
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Company Name */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
-              企業名 <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.companyName}
-              onChange={(e) => handleFieldChange('companyName', e.target.value)}
-              onBlur={() => handleFieldBlur('companyName')}
-              className={`w-full px-4 py-3 bg-gray-900 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-200 ${
-                errors.companyName 
-                  ? 'border-red-400 focus:ring-red-400' 
-                  : 'border-gray-700 focus:ring-purple-400 focus:border-transparent'
-              }`}
-              placeholder="株式会社HATAMO"
-              disabled={isLoading}
-            />
-            {errors.companyName && (
-              <p className="text-sm text-red-400 flex items-center">
-                <span className="mr-1">⚠️</span>
-                {errors.companyName}
-              </p>
-            )}
-          </div>
-
           {/* Email */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
               メールアドレス <span className="text-red-400">*</span>
             </label>
             <input
+              id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleFieldChange('email', e.target.value)}
@@ -272,10 +230,11 @@ export default function BusinessRegistrationForm({
 
           {/* Location */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-300">
               所在地 <span className="text-red-400">*</span>
             </label>
             <input
+              id="location"
               type="text"
               value={formData.location}
               onChange={(e) => handleFieldChange('location', e.target.value)}
@@ -298,10 +257,11 @@ export default function BusinessRegistrationForm({
 
           {/* Phone */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
               連絡先電話番号 <span className="text-red-400">*</span>
             </label>
             <input
+              id="phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => handleFieldChange('phone', e.target.value)}
@@ -324,10 +284,11 @@ export default function BusinessRegistrationForm({
 
           {/* Representative Name */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
+            <label htmlFor="representativeName" className="block text-sm font-medium text-gray-300">
               代表者名 <span className="text-red-400">*</span>
             </label>
             <input
+              id="representativeName"
               type="text"
               value={formData.representativeName}
               onChange={(e) => handleFieldChange('representativeName', e.target.value)}
@@ -350,10 +311,11 @@ export default function BusinessRegistrationForm({
 
           {/* Capital */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-300">
+            <label htmlFor="capital" className="block text-sm font-medium text-gray-300">
               資本金（万円）
             </label>
             <input
+              id="capital"
               type="number"
               value={formData.capital || ''}
               onChange={(e) => handleFieldChange('capital', e.target.value ? parseInt(e.target.value) : undefined)}
