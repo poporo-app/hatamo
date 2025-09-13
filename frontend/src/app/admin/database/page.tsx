@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDownIcon, ChevronRightIcon, TrashIcon, PencilIcon, PlusIcon, DatabaseIcon, TableCellsIcon, ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronRightIcon, TrashIcon, PencilIcon, PlusIcon, CircleStackIcon, TableCellsIcon, ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface TableData {
   name: string;
@@ -186,7 +186,7 @@ export default function DatabaseManager() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-3">
-              <DatabaseIcon className="h-8 w-8 text-blue-400" />
+              <CircleStackIcon className="h-8 w-8 text-blue-400" />
               <h1 className="text-3xl font-bold text-white">Database Manager</h1>
             </div>
             <button
@@ -255,7 +255,7 @@ export default function DatabaseManager() {
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
-              <DatabaseIcon className="h-5 w-5" />
+              <CircleStackIcon className="h-5 w-5" />
               <span>Open Adminer</span>
             </a>
             <p className="text-gray-400 text-sm mt-2">

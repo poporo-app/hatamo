@@ -125,30 +125,38 @@ export default function AdminDashboard() {
         </div>
 
         <Card title="システム管理">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link href="/admin/sponsors" className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-              <div className="text-lg font-medium text-purple-900 mb-1">スポンサー管理</div>
-              <div className="text-sm text-purple-700">審査・承認・停止処理</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link href="/admin/sponsor-approval" className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:from-purple-100 hover:to-purple-150 transition shadow-sm border border-purple-200">
+              <div className="text-lg font-semibold text-purple-900 mb-2">スポンサー審査</div>
+              <div className="text-sm text-purple-700 mb-3">承認・否認・再申請依頼</div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-purple-600">審査待ち: 8件</span>
+                <span className="text-purple-500">→</span>
+              </div>
             </Link>
-            <Link href="/admin/listings" className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-              <div className="text-lg font-medium text-purple-900 mb-1">掲載管理</div>
-              <div className="text-sm text-purple-700">サービスの公開・非公開設定</div>
+            <Link href="/admin/listing-management" className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:from-purple-100 hover:to-purple-150 transition shadow-sm border border-purple-200">
+              <div className="text-lg font-semibold text-purple-900 mb-2">掲載管理</div>
+              <div className="text-sm text-purple-700 mb-3">事業者リスト・公開設定</div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-purple-600">公開中: 156件</span>
+                <span className="text-purple-500">→</span>
+              </div>
             </Link>
-            <Link href="/admin/applications" className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-              <div className="text-lg font-medium text-purple-900 mb-1">申込管理</div>
-              <div className="text-sm text-purple-700">取引状況の確認</div>
+            <Link href="/admin/application-management" className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:from-purple-100 hover:to-purple-150 transition shadow-sm border border-purple-200">
+              <div className="text-lg font-semibold text-purple-900 mb-2">申込管理</div>
+              <div className="text-sm text-purple-700 mb-3">利用者申込一覧・ステータス確認</div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-purple-600">今月: 89件</span>
+                <span className="text-purple-500">→</span>
+              </div>
             </Link>
-            <Link href="/admin/settlements" className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-              <div className="text-lg font-medium text-purple-900 mb-1">精算管理</div>
-              <div className="text-sm text-purple-700">手数料計算・振込処理</div>
-            </Link>
-            <Link href="/admin/users" className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-              <div className="text-lg font-medium text-purple-900 mb-1">利用者管理</div>
-              <div className="text-sm text-purple-700">アカウント管理・サポート</div>
-            </Link>
-            <Link href="/admin/reports" className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-              <div className="text-lg font-medium text-purple-900 mb-1">レポート</div>
-              <div className="text-sm text-purple-700">統計・分析データ</div>
+            <Link href="/admin/settlement" className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:from-purple-100 hover:to-purple-150 transition shadow-sm border border-purple-200">
+              <div className="text-lg font-semibold text-purple-900 mb-2">精算管理</div>
+              <div className="text-sm text-purple-700 mb-3">手数料控除後振込額計算・明細生成</div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-purple-600">処理待ち: 12件</span>
+                <span className="text-purple-500">→</span>
+              </div>
             </Link>
           </div>
         </Card>

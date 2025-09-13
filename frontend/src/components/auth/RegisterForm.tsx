@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authApi, validatePasswordStrength, validateEmail, validateName } from '@/lib/api/auth';
 import { RegisterRequest, FormErrors } from '@/types/auth';
+import ReCaptcha, { useReCaptcha } from '@/components/security/ReCaptcha';
 
 interface RegisterFormProps {
   onSuccess: (message: string) => void;
@@ -24,8 +25,10 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: [], isValid: false });
+  const [passwordStrength, setPasswordStrength] = useState<{ score: number; feedback: string[]; isValid: boolean }>({ score: 0, feedback: [], isValid: false });
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+  const { ref: recaptchaRef, reset: resetRecaptcha } = useReCaptcha();
 
   // Real-time password strength validation
   useEffect(() => {
@@ -128,6 +131,11 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
   const validateAllFields = (): boolean => {
     const newErrors: { [key: string]: string } = {};
     
+    // Validate reCAPTCHA
+    if (!recaptchaToken) {
+      newErrors.recaptcha = 'reCAPTCHAの認証が必要です';
+    }
+    
     // Validate email
     if (!formData.email) {
       newErrors.email = 'メールアドレスは必須です';
@@ -174,7 +182,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     }
     
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0 && passwordStrength.isValid;
+    return Object.keys(newErrors).length === 0 && passwordStrength.isValid && recaptchaToken;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -196,9 +204,13 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
         firstName: formData.firstName,
         lastName: formData.lastName,
         firstNameKana: formData.firstNameKana,
-        lastNameKana: formData.lastNameKana
+        lastNameKana: formData.lastNameKana,
+        recaptchaToken: recaptchaToken
       });
       onSuccess(response.message || '登録が完了しました。確認メールをお送りしましたので、メールをご確認ください。');
+      // Reset reCAPTCHA after successful submission
+      resetRecaptcha();
+      setRecaptchaToken('');
     } catch (error: any) {
       
       // Handle server-side validation errors
@@ -221,9 +233,15 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
           }
         });
         setErrors(serverErrors);
+        // Reset reCAPTCHA on validation errors
+        resetRecaptcha();
+        setRecaptchaToken('');
         // Don't show general error message when there are field-specific errors
       } else {
         onError(error.message || '登録に失敗しました。もう一度お試しください。');
+        // Reset reCAPTCHA on general errors
+        resetRecaptcha();
+        setRecaptchaToken('');
       }
     } finally {
       setIsLoading(false);
@@ -503,12 +521,43 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
           )}
         </div>
 
-        {/* Submit Button */}
+        {/* reCAPTCHA */}
+        <div className="space-y-2">
+          <div ref={recaptchaRef}>
+            <ReCaptcha
+              onVerify={(token) => {
+                setRecaptchaToken(token);
+                // Clear reCAPTCHA error when verified
+                if (errors.recaptcha) {
+                  setErrors(prev => ({ ...prev, recaptcha: undefined }));
+                }
+              }}
+              onExpired={() => {
+                setRecaptchaToken('');
+                setErrors(prev => ({ ...prev, recaptcha: 'reCAPTCHAの有効期限が切れました。もう一度認証してください。' }));
+              }}
+              onError={() => {
+                setRecaptchaToken('');
+                setErrors(prev => ({ ...prev, recaptcha: 'reCAPTCHA認証中にエラーが発生しました。' }));
+              }}
+              theme="dark"
+              disabled={isLoading}
+            />
+          </div>
+          {errors.recaptcha && (
+            <p className="text-sm text-red-400 flex items-center">
+              <span className="mr-1">⚠️</span>
+              {errors.recaptcha}
+            </p>
+          )}
+        </div>
+
+        {/* Submit Button */
         <button
           type="submit"
-          disabled={isLoading || !passwordStrength.isValid}
+          disabled={isLoading || !passwordStrength.isValid || !recaptchaToken}
           className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all duration-200 ${
-            isLoading || !passwordStrength.isValid
+            isLoading || !passwordStrength.isValid || !recaptchaToken
               ? 'bg-gray-600 cursor-not-allowed'
               : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900'
           }`}

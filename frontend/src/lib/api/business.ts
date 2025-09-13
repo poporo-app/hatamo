@@ -88,12 +88,11 @@ export const businessApi = {
   },
 
   verifyEmail: async (token: string): Promise<{ message: string; user: BusinessUser; business: Business }> => {
-    const response = await apiClient.get(`/business/verify-email?token=${token}`);
-    return response.data;
+    return await apiClient.get<{ message: string; user: BusinessUser; business: Business }>(`/business/verify-email?token=${token}`);
   },
 
   resendVerification: async (email: string): Promise<{ message: string }> => {
-    const response = await apiClient.post('/business/resend-verification', { email });
+    const response = await apiClient.post<{ message: string }>('/business/resend-verification', { email });
     return response.data;
   },
 };

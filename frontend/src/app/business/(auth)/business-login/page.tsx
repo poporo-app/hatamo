@@ -4,11 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { businessApi, BusinessLoginRequest } from '@/lib/api/business';
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function BusinessLoginPage() {
   const router = useRouter();
-  const { login: authLogin } = useAuth();
   const [formData, setFormData] = useState<BusinessLoginRequest>({
     email: '',
     password: '',
@@ -74,9 +72,6 @@ export default function BusinessLoginPage() {
           sessionStorage.setItem('business_refresh_token', response.refresh_token || '');
           sessionStorage.setItem('business_user_data', JSON.stringify(response.user));
         }
-        
-        // Update auth context
-        authLogin(response.token, response.refresh_token || '', response.user);
         
         // Redirect to business dashboard
         router.push('/business/dashboard');

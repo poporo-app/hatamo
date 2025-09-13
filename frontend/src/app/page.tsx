@@ -15,14 +15,14 @@ export default function HomePage() {
       <main className="flex-grow container mx-auto px-4 py-8">
         <section className="mb-12">
           <div className={`bg-gradient-to-r ${
-            role === 'sponsor' ? 'from-green-800 to-green-900' :
+            role === 'business' ? 'from-green-800 to-green-900' :
             role === 'admin' ? 'from-purple-800 to-purple-900' :
             'from-blue-800 to-blue-900'
           } text-white rounded-lg p-12 text-center`}>
             <h1 className="text-4xl font-bold mb-4">異次元コミュニティ HATAMO</h1>
             <p className="text-xl mb-8">信頼できるプロフェッショナルとのマッチングサービス</p>
             <div className="flex gap-4 justify-center">
-              <Link href="/services">
+              <Link href="/businesses">
                 <Button size="lg" theme={role}>サービスを探す</Button>
               </Link>
               <Link href="/register">
@@ -43,7 +43,7 @@ export default function HomePage() {
                   <p className="text-gray-600 mb-2">プロフェッショナルなサービスを提供します</p>
                   <p className="text-2xl font-bold text-blue-600">¥10,000〜</p>
                 </div>
-                <Link href={`/service/${i}`}>
+                <Link href={`/business/${i}`}>
                   <Button fullWidth theme={role}>詳細を見る</Button>
                 </Link>
               </Card>
@@ -55,7 +55,7 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-6">カテゴリから探す</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {['ビジネス', 'IT・技術', 'クリエイティブ', 'コンサルティング', '教育', 'ライフスタイル', '健康・美容', 'その他'].map((category) => (
-              <Link key={category} href={`/category/${category}`}>
+              <Link key={category} href={`/businesses?category=${encodeURIComponent(category)}`}>
                 <div className="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
                   <p className="font-medium text-gray-700">{category}</p>
                 </div>

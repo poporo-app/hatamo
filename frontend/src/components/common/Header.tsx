@@ -41,7 +41,7 @@ export default function Header({ role }: HeaderProps) {
       case 'user':
         return [
           { href: '/', label: 'トップ' },
-          { href: '/services', label: 'サービス一覧' },
+          { href: '/businesses', label: 'サービス一覧' },
           { href: '/search', label: '検索' },
           { href: '/mypage', label: 'マイページ' },
         ];

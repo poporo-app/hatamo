@@ -7,7 +7,7 @@ interface ButtonProps {
   disabled?: boolean;
   className?: string;
   fullWidth?: boolean;
-  theme?: 'user' | 'sponsor' | 'admin';
+  theme?: 'user' | 'business' | 'admin';
 }
 
 export default function Button({
@@ -28,7 +28,7 @@ export default function Button({
       switch (theme) {
         case 'user':
           return 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500';
-        case 'sponsor':
+        case 'business':
           return 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500';
         case 'admin':
           return 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500';

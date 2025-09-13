@@ -37,8 +37,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/terms" className="hover:text-white transition-colors">利用規約</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">プライバシーポリシー</Link></li>
-              <li><Link href="/legal" className="hover:text-white transition-colors">特定商取引法に基づく表記</Link></li>
-              <li><Link href="/cancellation" className="hover:text-white transition-colors">キャンセル・返金規約</Link></li>
+              <li><Link href="/commercial-transaction" className="hover:text-white transition-colors">特定商取引法に基づく表記</Link></li>
             </ul>
           </div>
         </div>

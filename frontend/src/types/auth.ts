@@ -6,6 +6,7 @@ export interface RegisterRequest {
   lastName: string;
   firstNameKana?: string;
   lastNameKana?: string;
+  recaptchaToken?: string;
 }
 
 export interface RegisterResponse {
@@ -69,6 +70,7 @@ export interface FormErrors {
   lastName?: string;
   firstNameKana?: string;
   lastNameKana?: string;
+  recaptcha?: string;
   general?: string;
 }
 

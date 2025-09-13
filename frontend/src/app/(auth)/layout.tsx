@@ -8,7 +8,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`${inter.className} min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-blue-900`}>
+    <div className={`${inter.className} min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900`}>
       {/* Background Pattern */}
       <div className="fixed inset-0 opacity-10">
         <div className="absolute inset-0" style={{
