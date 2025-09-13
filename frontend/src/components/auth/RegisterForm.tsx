@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { authApi, validatePasswordStrength, validateEmail, validateName } from '@/lib/api/auth';
 import { RegisterRequest, FormErrors } from '@/types/auth';
-import ReCaptcha, { useReCaptcha } from '@/components/security/ReCaptcha';
+import ReCaptcha from '@/components/security/ReCaptcha';
 
 interface RegisterFormProps {
   onSuccess: (message: string) => void;
@@ -28,7 +28,6 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
   const [passwordStrength, setPasswordStrength] = useState<{ score: number; feedback: string[]; isValid: boolean }>({ score: 0, feedback: [], isValid: false });
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [recaptchaToken, setRecaptchaToken] = useState<string>('');
-  const { ref: recaptchaRef, reset: resetRecaptcha } = useReCaptcha();
 
   // Real-time password strength validation
   useEffect(() => {
@@ -209,7 +208,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
       });
       onSuccess(response.message || '登録が完了しました。確認メールをお送りしましたので、メールをご確認ください。');
       // Reset reCAPTCHA after successful submission
-      resetRecaptcha();
+      // Reset reCAPTCHA if needed
       setRecaptchaToken('');
     } catch (error: any) {
       
@@ -234,13 +233,13 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
         });
         setErrors(serverErrors);
         // Reset reCAPTCHA on validation errors
-        resetRecaptcha();
+        // Reset reCAPTCHA if needed
         setRecaptchaToken('');
         // Don't show general error message when there are field-specific errors
       } else {
         onError(error.message || '登録に失敗しました。もう一度お試しください。');
         // Reset reCAPTCHA on general errors
-        resetRecaptcha();
+        // Reset reCAPTCHA if needed
         setRecaptchaToken('');
       }
     } finally {
