@@ -12,6 +12,9 @@ export default function RegisterPage() {
     const port = window.location.port;
     const hostname = window.location.hostname;
     
+    console.log('Current port:', port); // デバッグ用
+    console.log('Current hostname:', hostname); // デバッグ用
+    
     // 開発環境でのポート判定
     if (port === '3001' || (!port && hostname.includes('user'))) {
       setViewType('user');

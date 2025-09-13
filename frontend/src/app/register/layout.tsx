@@ -16,13 +16,19 @@ export default function RegisterLayout({
     const port = window.location.port;
     const hostname = window.location.hostname;
     
+    console.log('[Layout] Current port:', port); // デバッグ用
+    console.log('[Layout] Current hostname:', hostname); // デバッグ用
+    
     // 開発環境でのポート判定
     if (port === '3001' || (!port && hostname.includes('user'))) {
+      console.log('[Layout] Setting viewType to user');
       setViewType('user');
     } else if (port === '3002' || (!port && hostname.includes('business'))) {
+      console.log('[Layout] Setting viewType to business');
       setViewType('business');
     } else {
       // デフォルトはユーザー視点
+      console.log('[Layout] Setting viewType to user (default)');
       setViewType('user');
     }
   }, []);
