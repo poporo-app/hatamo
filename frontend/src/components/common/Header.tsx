@@ -87,6 +87,16 @@ export default function Header({ role }: HeaderProps) {
           </nav>
           
           <div className="flex items-center space-x-4">
+            {/* Business Registration Link for business role */}
+            {role === 'business' && !isAuthenticated && (
+              <Link
+                href="/business/register"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 px-4 py-2 rounded-md transition-all transform hover:scale-105 font-medium"
+              >
+                事業者登録
+              </Link>
+            )}
+            
             {isAuthenticated && user ? (
               <div className="relative">
                 <button

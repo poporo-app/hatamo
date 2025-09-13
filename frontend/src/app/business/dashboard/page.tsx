@@ -544,6 +544,33 @@ export default function BusinessDashboard() {
       <Header role="business" />
       
       <main className="flex-grow container mx-auto px-4 py-8">
+        {/* Business Registration Banner */}
+        <div className="mb-8 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl shadow-lg p-8 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">HATAMOビジネスパートナーになりませんか？</h2>
+              <p className="text-purple-100 mb-4">
+                異次元コミュニティのビジネスマッチングプラットフォームで、新たなビジネスチャンスを掴みましょう
+              </p>
+              <ul className="text-sm text-purple-100 space-y-1 mb-6">
+                <li>✓ 月額制で安定した案件獲得</li>
+                <li>✓ 審査済みの優良顧客とマッチング</li>
+                <li>✓ 充実したサポート体制</li>
+              </ul>
+              <Link
+                href="/business/register"
+                className="inline-flex items-center px-6 py-3 bg-white text-purple-700 font-bold rounded-lg hover:bg-purple-50 transition-all transform hover:scale-105"
+              >
+                今すぐ事業者登録
+                <span className="ml-2">→</span>
+              </Link>
+            </div>
+            <div className="hidden lg:block text-8xl opacity-50">
+              🚀
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">事業者ダッシュボード</h1>
           <p className="text-gray-600 mt-2">ビジネスの状況を一目で確認・管理</p>
