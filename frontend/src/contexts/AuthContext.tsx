@@ -64,6 +64,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('user_data', JSON.stringify(user));
     
+    // Also set cookie for middleware
+    document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+    
     setUser(user);
     setIsAuthenticated(true);
   };
@@ -77,11 +80,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem('user_data');
     
+    // Clear cookies as well (for middleware)
+    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    
     setUser(null);
     setIsAuthenticated(false);
     
-    // Redirect to home page
-    window.location.href = '/';
+    // Redirect based on current path
+    const currentPath = window.location.pathname;
+    if (currentPath.startsWith('/business')) {
+      window.location.href = '/business/business-login';
+    } else if (currentPath.startsWith('/admin')) {
+      window.location.href = '/admin/login';
+    } else {
+      window.location.href = '/';
+    }
   };
 
   // Don't render children until we've checked auth status

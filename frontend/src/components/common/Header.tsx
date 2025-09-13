@@ -139,7 +139,7 @@ export default function Header({ role }: HeaderProps) {
               </div>
             ) : (
               <Link 
-                href="/login"
+                href={role === 'business' ? '/business/business-login' : role === 'admin' ? '/admin/login' : '/login'}
                 className="bg-black bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-md transition-colors"
               >
                 ログイン
