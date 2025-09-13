@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authApi, validatePasswordStrength, validateEmail, validateName } from '@/lib/api/auth';
 import { RegisterRequest, FormErrors } from '@/types/auth';
 import ReCaptcha from '@/components/security/ReCaptcha';
@@ -181,7 +181,10 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
     }
     
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0 && passwordStrength.isValid && recaptchaToken;
+    const hasNoErrors = Object.keys(newErrors).length === 0;
+    const isPasswordValid = passwordStrength.isValid;
+    const hasRecaptcha = !!recaptchaToken;
+    return hasNoErrors && isPasswordValid && hasRecaptcha;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -522,7 +525,7 @@ export default function RegisterForm({ onSuccess, onError }: RegisterFormProps) 
 
         {/* reCAPTCHA */}
         <div className="space-y-2">
-          <div ref={recaptchaRef}>
+          <div>
             <ReCaptcha
               onVerify={(token) => {
                 setRecaptchaToken(token);
