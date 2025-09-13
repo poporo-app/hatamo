@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import UserRegisterPage from '../(auth)/register/page';
-import BusinessRegisterPage from '../business/(auth)/register/page';
+import UserRegisterPage from '../(auth)/user-register/page';
+import BusinessRegisterPage from '../business/(auth)/business-register/page';
 
 export default function RegisterPage() {
   const [viewType, setViewType] = useState<'user' | 'business' | null>(null);

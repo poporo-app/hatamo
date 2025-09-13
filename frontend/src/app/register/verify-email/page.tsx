@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import UserVerifyEmailPage from '../../(auth)/register/verify-email/page';
-import BusinessVerifyEmailPage from '../../business/(auth)/register/verify-email/page';
+import UserVerifyEmailPage from '../../(auth)/user-register/verify-email/page';
+import BusinessVerifyEmailPage from '../../business/(auth)/business-register/verify-email/page';
 
 export default function VerifyEmailPage() {
   const [viewType, setViewType] = useState<'user' | 'business' | null>(null);

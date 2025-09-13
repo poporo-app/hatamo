@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import UserLoginPage from '../(auth)/login/page';
-import BusinessLoginPage from '../business/(auth)/login/page';
+import UserLoginPage from '../(auth)/user-login/page';
+import BusinessLoginPage from '../business/(auth)/business-login/page';
 
 export default function LoginPage() {
   const [viewType, setViewType] = useState<'user' | 'business' | null>(null);
