@@ -1,0 +1,24 @@
+{
+  "name": "hatamo-matching-service",
+  "version": "1.0.0",
+  "description": "HATAMO Matching Service Platform",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:admin": "cd admin-backend && npm run dev",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "docker:logs": "docker-compose logs -f",
+    "db:up": "docker-compose up -d mysql redis",
+    "db:down": "docker-compose stop mysql redis",
+    "db:migrate": "cd backend && npx prisma migrate dev",
+    "db:generate": "cd backend && npx prisma generate",
+    "db:studio": "cd backend && npx prisma studio",
+    "hosts:setup": "echo '127.0.0.1 hatamo.local admin.hatamo.local' | sudo tee -a /etc/hosts"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
