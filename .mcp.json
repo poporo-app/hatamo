@@ -1,5 +1,13 @@
 {
   "mcpServers": {
+      "@21st-dev/magic": {
+      "command": "npx",
+      "args": ["-y", "@21st-dev/magic@latest", "API_KEY=\"your-api-key\""]
+    },
+    "Figma Desktop": {
+      "type": "http",
+      "url": "http://127.0.0.1:3845/mcp"
+    },
     "playwright": {
       "command": "npx",
       "args": ["@playwright/mcp@latest"]
