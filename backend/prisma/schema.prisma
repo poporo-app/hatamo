@@ -17,7 +17,7 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String   @map("password_hash")
-  userType     UserType @map("user_type")
+  userType     UserType @map("user_type") // CLIENT: 利用のみ, SPONSOR: 提供+利用, ADMIN: 管理
   name         String
   profileImage String?  @map("profile_image")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -25,14 +25,14 @@ model User {
 
   // Relations
   usedInviteCode InviteCode? @relation("InviteCodeUser")
-  services       Service[]
-  clientBookings Booking[]   @relation("ClientBookings")
-  sponsorBookings Booking[]  @relation("SponsorBookings")
+  services       Service[] // SPONSORのみがサービスを提供可能
+  clientBookings Booking[]   @relation("ClientBookings") // CLIENT or SPONSORが利用者として申し込んだBooking
+  sponsorBookings Booking[]  @relation("SponsorBookings") // SPONSORが提供者として受けたBooking
   sentMessages   Message[]   @relation("SentMessages")
-  clientConversations Conversation[] @relation("ClientConversations")
-  sponsorConversations Conversation[] @relation("SponsorConversations")
-  clientReviews Review[] @relation("ClientReviews")
-  sponsorReviews Review[] @relation("SponsorReviews")
+  clientConversations Conversation[] @relation("ClientConversations") // 利用者側としての会話
+  sponsorConversations Conversation[] @relation("SponsorConversations") // 提供者側としての会話
+  clientReviews Review[] @relation("ClientReviews") // 利用者として投稿したレビュー
+  sponsorReviews Review[] @relation("SponsorReviews") // 提供者として受け取ったレビュー
 
   @@map("users")
 }
@@ -77,8 +77,8 @@ model Service {
 model Booking {
   id           String   @id @default(uuid())
   serviceId    String   @map("service_id")
-  clientId     String   @map("client_id")
-  sponsorId    String   @map("sponsor_id")
+  clientId     String   @map("client_id") // サービス利用者（CLIENT or SPONSOR）
+  sponsorId    String   @map("sponsor_id") // サービス提供者（必ずSPONSOR）
   status       BookingStatus @default(PENDING)
   totalPrice   Decimal  @db.Decimal(10, 2) @map("total_price")
   feeAmount    Decimal  @db.Decimal(10, 2) @map("fee_amount")
@@ -102,8 +102,8 @@ model Booking {
 
 model Conversation {
   id           String   @id @default(uuid())
-  clientId     String   @map("client_id")
-  sponsorId    String   @map("sponsor_id")
+  clientId     String   @map("client_id") // サービス利用者（CLIENT or SPONSOR）
+  sponsorId    String   @map("sponsor_id") // サービス提供者（必ずSPONSOR）
   lastMessageAt DateTime? @map("last_message_at")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -159,9 +159,9 @@ model Review {
 }
 
 enum UserType {
-  CLIENT
-  SPONSOR
-  ADMIN
+  CLIENT  // サービス利用のみ可能
+  SPONSOR // サービス提供と利用の両方が可能
+  ADMIN   // 管理機能のみ
 }
 
 enum ServiceCategory {

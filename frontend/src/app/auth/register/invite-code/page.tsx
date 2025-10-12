@@ -160,7 +160,6 @@ export default function InviteCodePage() {
               <ul className="space-y-1 text-sm text-blue-800">
                 <li>• 招待コードは運営がメールでお送りしたコードを使用して下さい</li>
                 <li>• コードは大文字・小文字を区別しません</li>
-                <li>• ハイフン（-）は自動で挿入されます</li>
               </ul>
             </div>
           </div>

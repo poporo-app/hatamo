@@ -4,10 +4,8 @@
 
 フロントエンドのみ対応
 
-1. 招待コード入力ページが再現されてませんので、修正して下さい
-https://www.figma.com/design/lRtxUVMuWNXfADk9KO3mtp/hatamo?node-id=8-42&m=dev
-
-2. デザイン設計.mdも参考に
+1. サービス詳細ページをfigmaを元に完全再現して下さい (figma dev mcpを利用して下さい)
+https://www.figma.com/design/lRtxUVMuWNXfADk9KO3mtp/hatamo?node-id=23-256&m=dev
 
 ## その他
 

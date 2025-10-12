@@ -8,6 +8,10 @@
       "type": "http",
       "url": "http://127.0.0.1:3845/mcp"
     },
+    "Framelink Figma MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    },
     "playwright": {
       "command": "npx",
       "args": ["@playwright/mcp@latest"]
