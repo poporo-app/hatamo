@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -17,6 +18,7 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String   @map("password_hash")
+  emailVerified Boolean @default(false) @map("email_verified")
   userType     UserType @map("user_type") // CLIENT: 利用のみ, SPONSOR: 提供+利用, ADMIN: 管理
   name         String
   profileImage String?  @map("profile_image")
@@ -24,7 +26,10 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  usedInviteCode InviteCode? @relation("InviteCodeUser")
+  usedInviteCodes InviteCode[] @relation("InviteCodeUser")
+  createdInviteCodes InviteCode[] @relation("InviteCodeCreator")
+  emailVerificationTokens EmailVerificationToken[]
+  sentInviteEmails InviteEmailLog[]
   services       Service[] // SPONSORのみがサービスを提供可能
   clientBookings Booking[]   @relation("ClientBookings") // CLIENT or SPONSORが利用者として申し込んだBooking
   sponsorBookings Booking[]  @relation("SponsorBookings") // SPONSORが提供者として受けたBooking
@@ -38,17 +43,63 @@ model User {
 }
 
 model InviteCode {
-  id       String   @id @default(uuid())
-  code     String   @unique
-  userType UserType @map("user_type")
-  usedBy   String?  @unique @map("used_by")
-  createdAt DateTime @default(now()) @map("created_at")
-  usedAt   DateTime? @map("used_at")
+  id        String           @id @default(uuid())
+  code      String           @unique
+  userType  UserType         @map("user_type")
+  status    InviteCodeStatus @default(ACTIVE)
+  expiresAt DateTime?        @map("expires_at")
+  memo      String?          @db.VarChar(500)
+  usedBy    String?          @map("used_by")
+  usedAt    DateTime?        @map("used_at")
+  createdBy String           @map("created_by")
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
 
   // Relations
-  user User? @relation("InviteCodeUser", fields: [usedBy], references: [id])
+  user         User?             @relation("InviteCodeUser", fields: [usedBy], references: [id])
+  creator      User              @relation("InviteCodeCreator", fields: [createdBy], references: [id])
+  emailLogs    InviteEmailLog[]
 
+  @@index([usedBy])
+  @@index([createdBy])
+  @@index([status])
   @@map("invite_codes")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model InviteEmailLog {
+  id             String          @id @default(uuid())
+  inviteCodeId   String          @map("invite_code_id")
+  recipientEmail String          @map("recipient_email")
+  recipientName  String?         @map("recipient_name")
+  sentAt         DateTime        @map("sent_at")
+  sentBy         String          @map("sent_by")
+  status         EmailSendStatus
+  errorMessage   String?         @map("error_message") @db.Text
+  emailSubject   String          @map("email_subject")
+  emailBody      String          @map("email_body") @db.Text
+  createdAt      DateTime        @default(now()) @map("created_at")
+
+  // Relations
+  inviteCode InviteCode @relation(fields: [inviteCodeId], references: [id], onDelete: Cascade)
+  sender     User       @relation(fields: [sentBy], references: [id])
+
+  @@index([inviteCodeId])
+  @@index([sentBy])
+  @@map("invite_email_logs")
 }
 
 model Service {
@@ -187,4 +238,16 @@ enum BookingStatus {
   COMPLETED
   CANCELLED
   REFUNDED
+}
+
+enum InviteCodeStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  DISABLED
+}
+
+enum EmailSendStatus {
+  SUCCESS
+  FAILED
 }

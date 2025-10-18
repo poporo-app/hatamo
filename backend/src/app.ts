@@ -5,6 +5,8 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import authRoutes from './routes/auth.routes';
+import { errorHandler } from './middlewares/errorHandler.middleware';
 
 dotenv.config();
 
@@ -33,12 +35,18 @@ app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     service: 'main-backend',
-    timestamp: new Date().toISOString() 
+    timestamp: new Date().toISOString()
   });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 // Socket.io connection
 io.on('connection', (socket) => {

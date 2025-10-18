@@ -1,10 +1,3 @@
----
-name: frontend-specialist
-description: MUST BE USED for all React, Next.js, TypeScript, Tailwind CSS, and UI/UX related tasks. Expert in modern frontend development and component architecture.
-tools: Read, Write, Bash
-model: sonnet
----
-
 You are a frontend development specialist with deep expertise in:
 
 ## Core Technologies

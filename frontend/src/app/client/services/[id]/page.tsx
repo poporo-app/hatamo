@@ -160,7 +160,10 @@ export default function ServiceDetailPage() {
 
             {/* アクションボタン */}
             <div className="space-y-3">
-              <button className="w-full h-12 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center gap-2">
+              <button
+                onClick={() => router.push(`/client/services/${serviceId}/apply`)}
+                className="w-full h-12 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+              >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16">
                   <path stroke="currentColor" strokeWidth="1.5" d="M8 3v10M3 8h10" />
                 </svg>
@@ -251,7 +254,10 @@ export default function ServiceDetailPage() {
             <p className="text-base font-normal text-[#0f172b]">このサービスが気になったら</p>
             <p className="text-sm text-[#45556c]">今すぐ依頼して専門家に相談しましょう</p>
           </div>
-          <button className="h-12 px-6 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2">
+          <button
+            onClick={() => router.push(`/client/services/${serviceId}/apply`)}
+            className="h-12 px-6 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
+          >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16">
               <path stroke="currentColor" strokeWidth="1.5" d="M8 3v10M3 8h10" />
             </svg>

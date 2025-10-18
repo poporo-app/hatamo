@@ -1,13 +1,10 @@
 ## 対応内容
 
-招待コード入力ページ実装
-
 フロントエンドのみ対応
+サブエージェント：frontend で実装して下さい
 
-1. サービス詳細ページをfigmaを元に完全再現して下さい (figma dev mcpを利用して下さい)
-https://www.figma.com/design/lRtxUVMuWNXfADk9KO3mtp/hatamo?node-id=23-256&m=dev
+1. ダッシュボード（利用者側）のメッセージタブページをfigmaを元に完全再現して下さい (figma dev mcpを利用して下さい)
+https://www.figma.com/design/lRtxUVMuWNXfADk9KO3mtp/hatamo?node-id=50-7620&m=dev
 
 ## その他
-
-- ultrathinkでしっかり思考して対応して下さい。
-- 調査する際はseranaを使用して広い範囲で調査して下さい
+- 指示以外の修正は行わない
