@@ -176,3 +176,17 @@ backend/prisma/schema.prisma
 docs/architecture/06-setup-instructions.md
 
 指示以外の修正はNG
+- # 対応内容
+
+フロントエンドのみ対応
+サブエージェント：frontend で実装して下さい
+
+docs/tasks/auth-task.md
+
+### Phase 3: 登録完了・メール確認
+
+未対応の箇所と対応済みでもエラーが出たり修正が必要な箇所も対応
+対応済みのタスクはauth-task.mdに進捗を反映して下さい。
+
+## その他
+- 指示以外の修正は行わない

@@ -1,97 +1,136 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export default function SponsorRegisterPage() {
+// バリデーションスキーマ
+const sponsorRegisterSchema = z.object({
+  companyName: z.string().min(1, '屋号を入力してください'),
+  contactLastName: z.string().min(1, '担当者の姓を入力してください'),
+  contactFirstName: z.string().min(1, '担当者の名を入力してください'),
+  email: z.string().email('有効なメールアドレスを入力してください'),
+  password: z.string().min(8, 'パスワードは8文字以上で入力してください'),
+  passwordConfirm: z.string(),
+  businessDescription: z.string().optional(),
+  agreeTerms: z.boolean().refine(val => val === true, {
+    message: '利用規約に同意してください',
+  }),
+  agreePrivacy: z.boolean().refine(val => val === true, {
+    message: 'プライバシーポリシーに同意してください',
+  }),
+  isRobot: z.boolean().refine(val => val === true, {
+    message: '「私はロボットではありません」にチェックを入れてください',
+  }),
+}).refine(data => data.password === data.passwordConfirm, {
+  message: 'パスワードが一致しません',
+  path: ['passwordConfirm'],
+});
+
+type SponsorRegisterFormData = z.infer<typeof sponsorRegisterSchema>;
+
+function SponsorRegisterForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const inviteCode = searchParams.get('code') || '';
+  const inviteCodeId = searchParams.get('inviteCodeId') || '';
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    passwordConfirm: '',
-    profileImage: null as File | null,
-  });
-
+  const [mounted, setMounted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [agreePrivacy, setAgreePrivacy] = useState(false);
-  const [isRobot, setIsRobot] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SponsorRegisterFormData>({
+    resolver: zodResolver(sponsorRegisterSchema),
+    defaultValues: {
+      companyName: '',
+      contactLastName: '',
+      contactFirstName: '',
+      email: '',
+      password: '',
+      passwordConfirm: '',
+      businessDescription: '',
+      agreeTerms: false,
+      agreePrivacy: false,
+      isRobot: false,
+    },
+  });
+
+  // クライアントサイドマウント検知
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // アクセス制御: 招待コード未検証の場合はリダイレクト
+  useEffect(() => {
+    if (mounted && !inviteCodeId) {
+      router.push('/auth/register/invite-code');
+    }
+  }, [mounted, inviteCodeId, router]);
+
+  const onSubmit = async (data: SponsorRegisterFormData) => {
     setError('');
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // ファイルサイズチェック (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('ファイルサイズは5MB以下にしてください');
-        return;
-      }
-      setFormData(prev => ({ ...prev, profileImage: file }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    // バリデーション
-    if (!formData.name.trim()) {
-      setError('お名前を入力してください');
-      return;
-    }
-    if (!formData.email.trim()) {
-      setError('メールアドレスを入力してください');
-      return;
-    }
-    if (!formData.password || formData.password.length < 8) {
-      setError('パスワードは8文字以上で入力してください');
-      return;
-    }
-    if (formData.password !== formData.passwordConfirm) {
-      setError('パスワードが一致しません');
-      return;
-    }
-    if (!agreeTerms) {
-      setError('利用規約に同意してください');
-      return;
-    }
-    if (!agreePrivacy) {
-      setError('プライバシーポリシーに同意してください');
-      return;
-    }
-    if (!isRobot) {
-      setError('「私はロボットではありません」にチェックを入れてください');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // TODO: API連携実装
-      console.log('登録データ:', { ...formData, inviteCode, userType: 'SPONSOR' });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register/sponsor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inviteCodeId: inviteCodeId,
+          businessName: data.companyName,
+          lastName: data.contactLastName,
+          firstName: data.contactFirstName,
+          email: data.email,
+          password: data.password,
+          businessDescription: data.businessDescription || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '登録に失敗しました');
+      }
 
       // 登録完了ページへリダイレクト
-      router.push(`/auth/register/complete?email=${encodeURIComponent(formData.email)}`);
+      router.push(`/auth/register/complete?email=${encodeURIComponent(data.email)}`);
     } catch (err) {
-      setError('登録に失敗しました');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('登録に失敗しました');
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center relative"
+        style={{
+          background: 'linear-gradient(145.86deg, rgb(248, 250, 252) 0%, rgb(239, 246, 255) 50%, rgb(248, 250, 252) 100%)'
+        }}
+      >
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!inviteCodeId) {
+    return null; // リダイレクト中
+  }
 
   return (
     <div
@@ -131,7 +170,7 @@ export default function SponsorRegisterPage() {
               <path stroke="currentColor" strokeWidth="2" d="M6 10l3 3 5-5" />
             </svg>
             <p className="text-sm text-green-800">
-              招待コード: <span className="font-normal">{inviteCode}</span> ✓
+              招待コード: <span className="font-normal">確認済み</span> ✓
             </p>
           </div>
 
@@ -150,23 +189,58 @@ export default function SponsorRegisterPage() {
           )}
 
           {/* フォーム */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* お名前 */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* 屋号 */}
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-[#314158] flex items-center gap-1">
-                お名前
+              <label htmlFor="companyName" className="text-sm font-medium text-[#314158] flex items-center gap-1">
+                屋号（店舗名・企業名）
                 <span className="text-red-800">*</span>
               </label>
               <input
-                id="name"
-                name="name"
+                id="companyName"
                 type="text"
-                placeholder="山田 太郎"
-                value={formData.name}
-                onChange={handleInputChange}
+                placeholder="株式会社〇〇"
+                {...register('companyName')}
                 className="w-full h-12 px-3 border border-[#cad5e2] rounded-md text-sm text-slate-500 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
+              {errors.companyName && (
+                <p className="text-xs text-red-600 mt-1">{errors.companyName.message}</p>
+              )}
+            </div>
+
+            {/* 担当者名（姓・名） */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#314158] flex items-center gap-1">
+                担当者名
+                <span className="text-red-800">*</span>
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="姓"
+                    {...register('contactLastName')}
+                    className="w-full h-12 px-3 border border-[#cad5e2] rounded-md text-sm text-slate-500 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isLoading}
+                  />
+                  {errors.contactLastName && (
+                    <p className="text-xs text-red-600 mt-1">{errors.contactLastName.message}</p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="名"
+                    {...register('contactFirstName')}
+                    className="w-full h-12 px-3 border border-[#cad5e2] rounded-md text-sm text-slate-500 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={isLoading}
+                  />
+                  {errors.contactFirstName && (
+                    <p className="text-xs text-red-600 mt-1">{errors.contactFirstName.message}</p>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* メールアドレス */}
@@ -177,14 +251,15 @@ export default function SponsorRegisterPage() {
               </label>
               <input
                 id="email"
-                name="email"
                 type="email"
                 placeholder="example@hatamo.com"
-                value={formData.email}
-                onChange={handleInputChange}
+                {...register('email')}
                 className="w-full h-12 px-3 border border-[#cad5e2] rounded-md text-sm text-slate-500 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
+              {errors.email && (
+                <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+              )}
             </div>
 
             {/* パスワード */}
@@ -196,11 +271,9 @@ export default function SponsorRegisterPage() {
               <div className="relative">
                 <input
                   id="password"
-                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="8文字以上で入力してください"
-                  value={formData.password}
-                  onChange={handleInputChange}
+                  {...register('password')}
                   className="w-full h-12 px-3 pr-10 border border-[#cad5e2] rounded-md text-sm text-slate-500 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isLoading}
                 />
@@ -223,6 +296,9 @@ export default function SponsorRegisterPage() {
                   )}
                 </button>
               </div>
+              {errors.password && (
+                <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
+              )}
             </div>
 
             {/* パスワード（確認用） */}
@@ -234,11 +310,9 @@ export default function SponsorRegisterPage() {
               <div className="relative">
                 <input
                   id="passwordConfirm"
-                  name="passwordConfirm"
                   type={showPasswordConfirm ? 'text' : 'password'}
                   placeholder="パスワードを再入力してください"
-                  value={formData.passwordConfirm}
-                  onChange={handleInputChange}
+                  {...register('passwordConfirm')}
                   className="w-full h-12 px-3 pr-10 border border-[#cad5e2] rounded-md text-sm text-slate-500 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isLoading}
                 />
@@ -261,38 +335,27 @@ export default function SponsorRegisterPage() {
                   )}
                 </button>
               </div>
+              {errors.passwordConfirm && (
+                <p className="text-xs text-red-600 mt-1">{errors.passwordConfirm.message}</p>
+              )}
             </div>
 
-            {/* プロフィール画像（任意） */}
+            {/* 事業内容（任意） */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#314158]">
-                プロフィール画像（任意）
+              <label htmlFor="businessDescription" className="text-sm font-medium text-[#314158]">
+                事業内容（任意）
               </label>
-              <label
-                htmlFor="profileImage"
-                className="inline-flex items-center gap-2 bg-slate-100 rounded-lg px-4 py-2 cursor-pointer hover:bg-slate-200 transition-colors"
-              >
-                <svg className="w-4 h-4 text-[#45556c]" fill="none" viewBox="0 0 16 16">
-                  <path stroke="currentColor" strokeWidth="1.5" d="M8 2v12M2 8h12" />
-                </svg>
-                <span className="text-sm text-[#45556c]">画像を選択</span>
-              </label>
-              <input
-                id="profileImage"
-                type="file"
-                accept="image/jpeg,image/png,image/gif"
-                onChange={handleFileChange}
-                className="hidden"
+              <textarea
+                id="businessDescription"
+                placeholder="事業内容を入力してください"
+                {...register('businessDescription')}
+                rows={4}
+                className="w-full px-3 py-2 border border-[#cad5e2] rounded-md text-sm text-slate-500 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 disabled={isLoading}
               />
-              {formData.profileImage && (
-                <p className="text-xs text-[#62748e] mt-1">
-                  選択中: {formData.profileImage.name}
-                </p>
+              {errors.businessDescription && (
+                <p className="text-xs text-red-600 mt-1">{errors.businessDescription.message}</p>
               )}
-              <p className="text-xs text-[#62748e]">
-                JPG, PNG, GIF（最大5MB）
-              </p>
             </div>
 
             {/* 利用規約・プライバシーポリシー同意 */}
@@ -300,8 +363,7 @@ export default function SponsorRegisterPage() {
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  {...register('agreeTerms')}
                   className="mt-1 w-4 h-4 border-slate-200 rounded"
                   disabled={isLoading}
                 />
@@ -312,11 +374,13 @@ export default function SponsorRegisterPage() {
                   に同意する
                 </span>
               </label>
+              {errors.agreeTerms && (
+                <p className="text-xs text-red-600">{errors.agreeTerms.message}</p>
+              )}
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={agreePrivacy}
-                  onChange={(e) => setAgreePrivacy(e.target.checked)}
+                  {...register('agreePrivacy')}
                   className="mt-1 w-4 h-4 border-slate-200 rounded"
                   disabled={isLoading}
                 />
@@ -327,6 +391,9 @@ export default function SponsorRegisterPage() {
                   に同意する
                 </span>
               </label>
+              {errors.agreePrivacy && (
+                <p className="text-xs text-red-600">{errors.agreePrivacy.message}</p>
+              )}
             </div>
 
             {/* reCAPTCHA風 */}
@@ -334,8 +401,7 @@ export default function SponsorRegisterPage() {
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={isRobot}
-                  onChange={(e) => setIsRobot(e.target.checked)}
+                  {...register('isRobot')}
                   className="w-6 h-6 border-2 border-[#cad5e2] rounded"
                   disabled={isLoading}
                 />
@@ -343,6 +409,9 @@ export default function SponsorRegisterPage() {
                   私はロボットではありません
                 </span>
               </label>
+              {errors.isRobot && (
+                <p className="text-xs text-red-600 mt-2">{errors.isRobot.message}</p>
+              )}
             </div>
 
             {/* 登録ボタン */}
@@ -380,5 +449,13 @@ export default function SponsorRegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SponsorRegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SponsorRegisterForm />
+    </Suspense>
   );
 }

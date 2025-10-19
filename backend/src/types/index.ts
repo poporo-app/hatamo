@@ -26,3 +26,11 @@ export interface InviteCodeVerificationData {
   userType: UserType;
   inviteCodeId: string;
 }
+
+// User Registration Response
+export interface UserRegistrationData {
+  userId: string;
+  email: string;
+  userType: UserType;
+  message: string;
+}

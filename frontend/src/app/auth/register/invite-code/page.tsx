@@ -60,19 +60,18 @@ export default function InviteCodePage() {
         throw new Error(errorData.message || '招待コードの検証に失敗しました');
       }
 
-      const data = await response.json();
+      const responseData = await response.json();
 
       // ユーザータイプを設定
-      setUserType(data.userType);
+      setUserType(responseData.data.userType);
 
       // 検証成功後、ユーザータイプに応じた登録ページへリダイレクト
-      setTimeout(() => {
-        if (data.userType === 'CLIENT') {
-          router.push(`/auth/register/client?code=${inviteCode}`);
-        } else if (data.userType === 'SPONSOR') {
-          router.push(`/auth/register/sponsor?code=${inviteCode}`);
-        }
-      }, 1000);
+      // inviteCodeId (UUID) を渡す
+      if (responseData.data.userType === 'CLIENT') {
+        router.push(`/auth/register/client?inviteCodeId=${responseData.data.inviteCodeId}`);
+      } else if (responseData.data.userType === 'SPONSOR') {
+        router.push(`/auth/register/sponsor?inviteCodeId=${responseData.data.inviteCodeId}`);
+      }
 
     } catch (err) {
       if (err instanceof Error) {
@@ -150,6 +149,12 @@ export default function InviteCodePage() {
                   {isLoading ? '...' : '確認'}
                 </button>
               </div>
+              {/* エラーメッセージ */}
+              {error && (
+                <p className="text-sm text-red-600 mt-1">
+                  {error}
+                </p>
+              )}
             </div>
 
             {/* 青い情報ボックス */}
